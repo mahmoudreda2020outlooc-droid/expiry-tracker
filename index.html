@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تتبع صلاحية المنتجات ☕</title>
+  <style>
+    :root {
+      --bg: #1a1208;
+      --card: #2c1f0e;
+      --card2: #3a2a12;
+      --accent: #c8873a;
+      --accent2: #e8a84a;
+      --text: #f5e6cc;
+      --text2: #c4a97a;
+      --green: #4caf82;
+      --yellow: #f0c040;
+      --red: #e05050;
+      --red-bg: #3a1010;
+      --yellow-bg: #3a2e00;
+      --green-bg: #0a2e1a;
+      --border: #4a3520;
+      --shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', 'Cairo', Tahoma, Arial, sans-serif;
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, #2c1f0e, #1a1208);
+      border-bottom: 2px solid var(--accent);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+    header h1 { font-size: 1.3rem; color: var(--accent2); }
+    header span { font-size: 1.5rem; }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 16px 20px 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      position: sticky;
+      top: 61px;
+      z-index: 90;
+    }
+    .tab {
+      padding: 10px 18px;
+      border-radius: 8px 8px 0 0;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      background: var(--card);
+      color: var(--text2);
+      transition: all 0.2s;
+    }
+    .tab.active {
+      background: var(--accent);
+      color: #1a1208;
+      font-weight: bold;
+      border-color: var(--accent);
+    }
+    .tab:hover:not(.active) { background: var(--card2); color: var(--text); }
+    .page { display: none; padding: 20px; max-width: 900px; margin: 0 auto; }
+    .page.active { display: block; }
+
+    /* ========== DASHBOARD ========== */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    .stat-card .num { font-size: 2rem; font-weight: bold; }
+    .stat-card .lbl { font-size: 0.8rem; color: var(--text2); margin-top: 4px; }
+    .stat-card.red { border-color: var(--red); background: var(--red-bg); }
+    .stat-card.yellow { border-color: var(--yellow); background: var(--yellow-bg); }
+    .stat-card.green { border-color: var(--green); background: var(--green-bg); }
+    .stat-card.red .num { color: var(--red); }
+    .stat-card.yellow .num { color: var(--yellow); }
+    .stat-card.green .num { color: var(--green); }
+
+    .section-title {
+      font-size: 1rem;
+      color: var(--accent2);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .product-list { display: flex; flex-direction: column; gap: 10px; }
+    .product-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 14px 16px;
+      border-right: 4px solid var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: transform 0.15s;
+      cursor: default;
+    }
+    .product-card:hover { transform: translateX(-2px); }
+    .product-card.yellow { border-color: var(--yellow); }
+    .product-card.red { border-color: var(--red); background: var(--red-bg); }
+    .product-card.expired { border-color: #555; opacity: 0.6; }
+    .product-card .info { flex: 1; }
+    .product-card .name { font-weight: bold; font-size: 1rem; }
+    .product-card .meta { font-size: 0.8rem; color: var(--text2); margin-top: 4px; }
+    .product-card .badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .badge.green { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+    .badge.yellow { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow); }
+    .badge.red { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
+    .badge.expired { background: #222; color: #888; border: 1px solid #555; }
+    .del-btn {
+      background: none;
+      border: none;
+      color: #555;
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .del-btn:hover { color: var(--red); background: var(--red-bg); }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text2);
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+
+    /* ========== OPEN PRODUCT ========== */
+    .form-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    .form-card h2 { color: var(--accent2); margin-bottom: 20px; font-size: 1.1rem; }
+    .form-row { margin-bottom: 16px; }
+    .form-row label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text2); }
+    .form-row input, .form-row select, .form-row textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: inherit;
+      direction: rtl;
+      transition: border-color 0.2s;
+    }
+    .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .form-row textarea { resize: vertical; min-height: 60px; }
+    .form-row select option { background: #2c1f0e; }
+    .btn {
+      background: var(--accent);
+      color: #1a1208;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 28px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      font-family: inherit;
+    }
+    .btn:hover { background: var(--accent2); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn.secondary {
+      background: var(--card2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn.secondary:hover { background: var(--border); }
+    .btn.danger { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
+    .btn.danger:hover { background: var(--red); color: white; }
+
+    /* ========== PRODUCT TYPES ========== */
+    .type-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .type-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .type-card .type-icon { font-size: 1.5rem; }
+    .type-card .type-info { flex: 1; }
+    .type-card .type-name { font-weight: bold; font-size: 0.95rem; }
+    .type-card .type-dur { font-size: 0.8rem; color: var(--text2); margin-top: 2px; }
+    .type-card .del-btn { font-size: 0.9rem; }
+
+    /* ========== TOAST ========== */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--accent);
+      color: #1a1208;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s ease;
+      z-index: 999;
+      pointer-events: none;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ========== MODAL ========== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: var(--shadow);
+    }
+    .modal h3 { color: var(--accent2); margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    @media (max-width: 500px) {
+      .stats-row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .stat-card { padding: 12px 8px; }
+      .stat-card .num { font-size: 1.5rem; }
+      .tabs { padding: 12px 12px 0; gap: 4px; }
+      .tab { padding: 8px 12px; font-size: 0.8rem; }
+      .page { padding: 14px; }
+      .type-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span>☕</span>
+  <h1>تتبع صلاحية المنتجات</h1>
+  <span>🍽️</span>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('dashboard')">📊 الرئيسية</div>
+  <div class="tab" onclick="switchTab('open')">➕ فتح منتج</div>
+  <div class="tab" onclick="switchTab('types')">📋 الأنواع</div>
+</div>
+
+<!-- ===================== DASHBOARD ===================== -->
+<div id="tab-dashboard" class="page active">
+  <div class="stats-row" id="stats-row"></div>
+
+  <div id="alert-section"></div>
+
+  <div class="section-title">⚠️ تنتهي قريباً (خلال 3 أيام)</div>
+  <div class="product-list" id="list-soon"></div>
+
+  <div class="section-title" style="margin-top:20px">✅ صالحة</div>
+  <div class="product-list" id="list-ok"></div>
+
+  <div class="section-title" style="margin-top:20px">❌ منتهية الصلاحية</div>
+  <div class="product-list" id="list-expired"></div>
+</div>
+
+<!-- ===================== OPEN PRODUCT ===================== -->
+<div id="tab-open" class="page">
+  <div class="form-card">
+    <h2>➕ تسجيل فتح منتج جديد</h2>
+
+    <!-- Mode Toggle -->
+    <div style="display:flex; gap:8px; margin-bottom:20px;">
+      <button id="mode-btn-existing" class="btn" style="flex:1; padding:10px;" onclick="setMode('existing')">📋 من القائمة</button>
+      <button id="mode-btn-custom" class="btn secondary" style="flex:1; padding:10px;" onclick="setMode('custom')">✏️ منتج مخصص</button>
+    </div>
+
+    <!-- EXISTING TYPE MODE -->
+    <div id="mode-existing">
+      <div class="form-row">
+        <label>نوع المنتج *</label>
+        <select id="open-type" onchange="onTypeChange()">
+          <option value="">-- اختر النوع --</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- CUSTOM MODE -->
+    <div id="mode-custom" style="display:none;">
+      <div class="form-row">
+        <label>اسم المنتج *</label>
+        <input id="custom-name" type="text" placeholder="مثلاً: صوص ياسمين، عجينة لوز..." oninput="onCustomChange()" />
+      </div>
+      <div style="display:flex; gap:12px; align-items:flex-end;">
+        <div class="form-row" style="flex:1; margin-bottom:0;">
+          <label>مدة الصلاحية بعد الفتح *</label>
+          <input id="custom-days" type="number" min="1" max="3650" placeholder="14" oninput="onCustomChange()" />
+        </div>
+        <div class="form-row" style="margin-bottom:0;">
+          <label>الوحدة</label>
+          <select id="custom-unit" onchange="onCustomChange()">
+            <option value="days">يوم</option>
+            <option value="hours">ساعة</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem; color:var(--text2);">
+          <input type="checkbox" id="custom-save" style="width:16px;height:16px;" />
+          حفظ هذا النوع في القائمة للمرة الجاية
+        </label>
+      </div>
+    </div>
+
+    <!-- Common fields -->
+    <div class="form-row" style="margin-top:16px;">
+      <label>اسم إضافي / وصف (اختياري)</label>
+      <input id="open-name" type="text" placeholder="مثلاً: سيروب فانيلا توفاني" />
+    </div>
+    <div class="form-row">
+      <label>تاريخ ووقت الفتح *</label>
+      <input id="open-datetime" type="datetime-local" oninput="onTypeChange(); onCustomChange();" />
+    </div>
+    <div class="form-row">
+      <label>ملاحظات (اختياري)</label>
+      <textarea id="open-notes" placeholder="أي ملاحظة إضافية..."></textarea>
+    </div>
+    <div id="open-preview" style="margin-bottom:16px; display:none; padding:12px; background:var(--green-bg); border-radius:8px; border:1px solid var(--green); color:var(--green); font-size:0.9rem;"></div>
+    <button class="btn" onclick="openProduct()">✅ تسجيل الفتح</button>
+  </div>
+</div>
+
+<!-- ===================== PRODUCT TYPES ===================== -->
+<div id="tab-types" class="page">
+  <div class="form-card">
+    <h2>➕ إضافة نوع منتج جديد</h2>
+    <div class="form-row">
+      <label>اسم المنتج *</label>
+      <input id="type-name" type="text" placeholder="مثلاً: عسل" />
+    </div>
+    <div class="form-row">
+      <label>إيموجي / أيقونة</label>
+      <input id="type-icon" type="text" placeholder="🍯" maxlength="5" style="width:80px; text-align:center;" />
+    </div>
+    <div style="display:flex; gap:12px; align-items:flex-end;">
+      <div class="form-row" style="flex:1; margin-bottom:0;">
+        <label>مدة الصلاحية بعد الفتح *</label>
+        <input id="type-days" type="number" min="1" max="3650" placeholder="30" />
+      </div>
+      <div class="form-row" style="margin-bottom:0;">
+        <label>الوحدة</label>
+        <select id="type-unit">
+          <option value="days">يوم</option>
+          <option value="hours">ساعة</option>
+        </select>
+      </div>
+    </div>
+    <br />
+    <button class="btn" onclick="addType()">➕ إضافة</button>
+  </div>
+
+  <div class="section-title">📋 أنواع المنتجات المحفوظة</div>
+  <div class="type-grid" id="type-grid"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="del-modal">
+  <div class="modal">
+    <h3>⚠️ تأكيد الحذف</h3>
+    <p id="del-msg" style="color:var(--text2);"></p>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal()">إلغاء</button>
+      <button class="btn danger" id="del-confirm-btn">حذف</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA =====================
+const DEFAULT_TYPES = [
+  { id: 'syrup',      name: 'سيروب',              icon: '🧴', days: 30,  unit: 'days' },
+  { id: 'milk',       name: 'حليب',               icon: '🥛', days: 3,   unit: 'days' },
+  { id: 'cream',      name: 'كريمة',              icon: '🍶', days: 3,   unit: 'days' },
+  { id: 'caramel',    name: 'صوص كراميل',         icon: '🍮', days: 30,  unit: 'days' },
+  { id: 'chocolate',  name: 'صوص شوكولاتة',       icon: '🍫', days: 30,  unit: 'days' },
+  { id: 'pistachio',  name: 'معجون فستق',         icon: '🟢', days: 14,  unit: 'days' },
+  { id: 'vanilla',    name: 'خلاصة فانيليا',      icon: '🌿', days: 90,  unit: 'days' },
+  { id: 'matcha',     name: 'ماتشا',              icon: '🍵', days: 14,  unit: 'days' },
+  { id: 'espresso',   name: 'حبوب قهوة مطحونة',  icon: '☕', days: 14,  unit: 'days' },
+  { id: 'whipping',   name: 'ويبينج كريم',        icon: '🧁', days: 3,   unit: 'days' },
+  { id: 'condensed',  name: 'حليب مكثف',         icon: '🥄', days: 14,  unit: 'days' },
+  { id: 'butter',     name: 'زبدة',              icon: '🧈', days: 14,  unit: 'days' },
+  { id: 'jam',        name: 'مربى',              icon: '🍓', days: 30,  unit: 'days' },
+  { id: 'ketchup',    name: 'كاتشب',             icon: '🍅', days: 30,  unit: 'days' },
+  { id: 'mayo',       name: 'مايونيز',           icon: '🫙', days: 14,  unit: 'days' },
+  { id: 'cheese',     name: 'جبن',               icon: '🧀', days: 7,   unit: 'days' },
+  { id: 'eggs',       name: 'بيض',               icon: '🥚', days: 21,  unit: 'days' },
+  { id: 'sauce',      name: 'صوص',               icon: '🫙', days: 14,  unit: 'days' },
+  { id: 'pesto',      name: 'بيستو',             icon: '🌱', days: 7,   unit: 'days' },
+  { id: 'tahini',     name: 'طحينة',             icon: '🌰', days: 30,  unit: 'days' },
+  { id: 'yeast',      name: 'خميرة',             icon: '🧫', days: 14,  unit: 'days' },
+  { id: 'juice',      name: 'عصير طازج',         icon: '🧃', days: 3,   unit: 'days' },
+  { id: 'cold_brew',  name: 'كولد برو',           icon: '🧊', days: 7,   unit: 'days' },
+];
+
+function loadTypes() {
+  const saved = localStorage.getItem('product_types');
+  if (!saved) {
+    localStorage.setItem('product_types', JSON.stringify(DEFAULT_TYPES));
+    return DEFAULT_TYPES;
+  }
+  return JSON.parse(saved);
+}
+function saveTypes(types) { localStorage.setItem('product_types', JSON.stringify(types)); }
+
+function loadItems() {
+  const saved = localStorage.getItem('opened_items');
+  return saved ? JSON.parse(saved) : [];
+}
+function saveItems(items) { localStorage.setItem('opened_items', JSON.stringify(items)); }
+
+// ===================== HELPERS =====================
+function now() { return new Date(); }
+function expiryDate(openedAt, type) {
+  const d = new Date(openedAt);
+  if (type.unit === 'hours') d.setHours(d.getHours() + type.days);
+  else d.setDate(d.getDate() + type.days);
+  return d;
+}
+function msLeft(expiry) { return new Date(expiry) - now(); }
+function formatDate(d) {
+  return new Date(d).toLocaleDateString('ar-EG', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function formatLeft(ms) {
+  if (ms <= 0) return 'منتهية';
+  const totalHours = Math.floor(ms / 3600000);
+  if (totalHours < 24) return `${totalHours} ساعة`;
+  const days = Math.floor(totalHours / 24);
+  const hours = totalHours % 24;
+  return hours > 0 ? `${days} يوم و${hours} ساعة` : `${days} يوم`;
+}
+function getStatus(ms) {
+  if (ms <= 0) return 'expired';
+  if (ms <= 3 * 24 * 3600000) return 'soon';
+  return 'ok';
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===================== TABS =====================
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const names = ['dashboard','open','types'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'open') renderOpenForm();
+  if (name === 'types') renderTypes();
+}
+
+// ===================== DASHBOARD =====================
+function renderDashboard() {
+  const items = loadItems();
+  const types = loadTypes();
+  const typeMap = {};
+  types.forEach(t => typeMap[t.id] = t);
+
+  const expired = [], soon = [], ok = [];
+  items.forEach(item => {
+    const type = typeMap[item.typeId];
+    if (!type) return;
+    const exp = expiryDate(item.openedAt, type);
+    const ms = msLeft(exp);
+    const s = getStatus(ms);
+    const entry = { item, type, exp, ms, status: s };
+    if (s === 'expired') expired.push(entry);
+    else if (s === 'soon') soon.push(entry);
+    else ok.push(entry);
+  });
+
+  // Stats
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card red">
+      <div class="num">${expired.length}</div>
+      <div class="lbl">❌ منتهية</div>
+    </div>
+    <div class="stat-card yellow">
+      <div class="num">${soon.length}</div>
+      <div class="lbl">⚠️ تنتهي قريباً</div>
+    </div>
+    <div class="stat-card green">
+      <div class="num">${ok.length}</div>
+      <div class="lbl">✅ صالحة</div>
+    </div>
+  `;
+
+  // Alert banner
+  const alertSec = document.getElementById('alert-section');
+  if (expired.length > 0) {
+    alertSec.innerHTML = `<div style="background:var(--red-bg);border:1px solid var(--red);border-radius:10px;padding:12px 16px;margin-bottom:16px;color:var(--red);font-weight:bold;">
+      ⚠️ تنبيه: ${expired.length} منتج منتهي الصلاحية يحتاج مراجعة فورية!
+    </div>`;
+  } else {
+    alertSec.innerHTML = '';
+  }
+
+  renderList('list-soon', soon, 'لا يوجد منتجات تنتهي قريباً ✨');
+  renderList('list-ok', ok, 'لا يوجد منتجات صالحة مسجلة');
+  renderList('list-expired', expired, 'لا يوجد منتجات منتهية ✅');
+}
+
+function renderList(id, entries, emptyMsg) {
+  const el = document.getElementById(id);
+  if (entries.length === 0) {
+    el.innerHTML = `<div style="color:var(--text2);font-size:0.9rem;padding:12px 0;">${emptyMsg}</div>`;
+    return;
+  }
+  entries.sort((a,b) => a.ms - b.ms);
+  el.innerHTML = entries.map(e => {
+    const cls = e.status === 'expired' ? 'expired' : e.status;
+    const badgeCls = e.status === 'expired' ? 'expired' : e.status === 'soon' ? 'yellow' : 'green';
+    const label = e.status === 'expired'
+      ? `انتهت ${formatDate(e.exp)}`
+      : `باقي ${formatLeft(e.ms)}`;
+    const label2 = e.status === 'expired' ? 'منتهي' : formatLeft(e.ms);
+    return `
+      <div class="product-card ${cls}">
+        <span style="font-size:1.5rem;flex-shrink:0;">${e.type.icon}</span>
+        <div class="info">
+          <div class="name">${e.item.name || e.type.name}</div>
+          <div class="meta">فُتح: ${formatDate(e.item.openedAt)} · ينتهي: ${formatDate(e.exp)}</div>
+          ${e.item.notes ? `<div class="meta" style="color:var(--text2);">📝 ${e.item.notes}</div>` : ''}
+        </div>
+        <div class="badge ${badgeCls}">${label2}</div>
+        <button class="del-btn" onclick="confirmDelete('${e.item.id}', '${(e.item.name||e.type.name).replace(/'/g,"\\'")}')">🗑️</button>
+      </div>`;
+  }).join('');
+}
+
+// ===================== OPEN PRODUCT =====================
+let currentMode = 'existing';
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('mode-existing').style.display = mode === 'existing' ? '' : 'none';
+  document.getElementById('mode-custom').style.display   = mode === 'custom'   ? '' : 'none';
+  document.getElementById('mode-btn-existing').className = mode === 'existing' ? 'btn' : 'btn secondary';
+  document.getElementById('mode-btn-custom').className   = mode === 'custom'   ? 'btn' : 'btn secondary';
+  document.getElementById('open-preview').style.display = 'none';
+}
+
+function renderOpenForm() {
+  const types = loadTypes();
+  const sel = document.getElementById('open-type');
+  const val = sel.value;
+  sel.innerHTML = '<option value="">-- اختر النوع --</option>' +
+    types.map(t => `<option value="${t.id}" ${t.id===val?'selected':''}>${t.icon} ${t.name} (${t.days} ${t.unit==='hours'?'ساعة':'يوم'})</option>`).join('');
+
+  // Set current datetime
+  const nowD = new Date();
+  nowD.setSeconds(0,0);
+  document.getElementById('open-datetime').value = nowD.toISOString().slice(0,16);
+  setMode(currentMode);
+  onTypeChange();
+}
+
+function onTypeChange() {
+  if (currentMode !== 'existing') return;
+  const types = loadTypes();
+  const typeId = document.getElementById('open-type').value;
+  const type = types.find(t => t.id === typeId);
+  const preview = document.getElementById('open-preview');
+  if (!type) { preview.style.display = 'none'; return; }
+  const dateVal = document.getElementById('open-datetime').value;
+  if (!dateVal) { preview.style.display = 'none'; return; }
+  const exp = expiryDate(dateVal, type);
+  preview.style.display = 'block';
+  preview.innerHTML = `✅ سينتهي بتاريخ: <strong>${formatDate(exp)}</strong> — صالح لمدة ${type.days} ${type.unit==='hours'?'ساعة':'يوم'}`;
+}
+
+function onCustomChange() {
+  if (currentMode !== 'custom') return;
+  const name  = document.getElementById('custom-name').value.trim();
+  const days  = parseInt(document.getElementById('custom-days').value);
+  const unit  = document.getElementById('custom-unit').value;
+  const dateVal = document.getElementById('open-datetime').value;
+  const preview = document.getElementById('open-preview');
+  if (!name || !days || !dateVal) { preview.style.display = 'none'; return; }
+  const fakeType = { days, unit };
+  const exp = expiryDate(dateVal, fakeType);
+  preview.style.display = 'block';
+  preview.innerHTML = `✅ <strong>${name}</strong> سينتهي بتاريخ: <strong>${formatDate(exp)}</strong> — صالح لمدة ${days} ${unit==='hours'?'ساعة':'يوم'}`;
+}
+
+function openProduct() {
+  const dateVal = document.getElementById('open-datetime').value;
+  const extraName = document.getElementById('open-name').value.trim();
+  const notes = document.getElementById('open-notes').value.trim();
+  if (!dateVal) { toast('⚠️ حدد تاريخ الفتح'); return; }
+
+  let typeId, displayName;
+
+  if (currentMode === 'existing') {
+    typeId = document.getElementById('open-type').value;
+    if (!typeId) { toast('⚠️ اختر نوع المنتج'); return; }
+    displayName = extraName;
+
+  } else {
+    // Custom mode
+    const customName = document.getElementById('custom-name').value.trim();
+    const customDays = parseInt(document.getElementById('custom-days').value);
+    const customUnit = document.getElementById('custom-unit').value;
+    if (!customName) { toast('⚠️ اكتب اسم المنتج'); return; }
+    if (!customDays || customDays < 1) { toast('⚠️ أدخل مدة صلاحية صحيحة'); return; }
+
+    // Save to types if checkbox checked
+    const shouldSave = document.getElementById('custom-save').checked;
+    typeId = 'custom_' + Date.now();
+    const types = loadTypes();
+    const newType = { id: typeId, name: customName, icon: '📦', days: customDays, unit: customUnit };
+    types.push(newType);
+    saveTypes(types);
+
+    displayName = extraName || '';
+
+    if (!shouldSave) {
+      // Mark as temporary — we still saved to types for rendering, but flag it
+      newType._temp = true;
+      saveTypes(types);
+    }
+  }
+
+  const items = loadItems();
+  items.push({
+    id: Date.now().toString(),
+    typeId,
+    name: displayName,
+    openedAt: new Date(dateVal).toISOString(),
+    notes,
+  });
+  saveItems(items);
+  toast('✅ تم تسجيل الفتح!');
+
+  // Reset form
+  document.getElementById('open-type').value = '';
+  document.getElementById('open-name').value = '';
+  document.getElementById('open-notes').value = '';
+  document.getElementById('custom-name').value = '';
+  document.getElementById('custom-days').value = '';
+  document.getElementById('custom-save').checked = false;
+  document.getElementById('open-preview').style.display = 'none';
+  switchTab('dashboard');
+}
+
+// ===================== PRODUCT TYPES =====================
+function renderTypes() {
+  const types = loadTypes();
+  document.getElementById('type-grid').innerHTML = types.map(t => `
+    <div class="type-card">
+      <div class="type-icon">${t.icon}</div>
+      <div class="type-info">
+        <div class="type-name">${t.name}</div>
+        <div class="type-dur">${t.days} ${t.unit==='hours'?'ساعة':'يوم'}</div>
+      </div>
+      <button class="del-btn" onclick="confirmDeleteType('${t.id}', '${t.name.replace(/'/g,"\\'")}')">🗑️</button>
+    </div>
+  `).join('');
+}
+
+function addType() {
+  const name = document.getElementById('type-name').value.trim();
+  const icon = document.getElementById('type-icon').value.trim() || '📦';
+  const days = parseInt(document.getElementById('type-days').value);
+  const unit = document.getElementById('type-unit').value;
+  if (!name) { toast('⚠️ أدخل اسم المنتج'); return; }
+  if (!days || days < 1) { toast('⚠️ أدخل مدة صالحة'); return; }
+  const types = loadTypes();
+  types.push({ id: Date.now().toString(), name, icon, days, unit });
+  saveTypes(types);
+  document.getElementById('type-name').value = '';
+  document.getElementById('type-icon').value = '';
+  document.getElementById('type-days').value = '';
+  toast('✅ تم إضافة النوع!');
+  renderTypes();
+}
+
+// ===================== DELETE =====================
+let pendingDelete = null;
+function confirmDelete(id, name) {
+  pendingDelete = { type: 'item', id };
+  document.getElementById('del-msg').textContent = `هل تريد حذف "${name}" من القائمة؟`;
+  document.getElementById('del-confirm-btn').onclick = doDelete;
+  document.getElementById('del-modal').classList.add('open');
+}
+function confirmDeleteType(id, name) {
+  pendingDelete = { type: 'type', id };
+  document.getElementById('del-msg').textContent = `هل تريد حذف نوع "${name}"؟ سيتم حذف كل المنتجات المفتوحة من هذا النوع.`;
+  document.getElementById('del-confirm-btn').onclick = doDelete;
+  document.getElementById('del-modal').classList.add('open');
+}
+function doDelete() {
+  if (!pendingDelete) return;
+  if (pendingDelete.type === 'item') {
+    const items = loadItems().filter(i => i.id !== pendingDelete.id);
+    saveItems(items);
+    renderDashboard();
+    toast('🗑️ تم الحذف');
+  } else {
+    const types = loadTypes().filter(t => t.id !== pendingDelete.id);
+    saveTypes(types);
+    const items = loadItems().filter(i => i.typeId !== pendingDelete.id);
+    saveItems(items);
+    renderTypes();
+    toast('🗑️ تم حذف النوع');
+  }
+  closeModal();
+}
+function closeModal() {
+  document.getElementById('del-modal').classList.remove('open');
+  pendingDelete = null;
+}
+document.getElementById('del-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('del-modal')) closeModal();
+});
+
+// ===================== INIT =====================
+loadTypes(); // ensure defaults saved
+renderDashboard();
+</script>
+</body>
+</html>
