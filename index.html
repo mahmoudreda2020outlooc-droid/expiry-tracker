@@ -386,7 +386,13 @@
 
 <!-- ===================== PRODUCT TYPES ===================== -->
 <div id="tab-types" class="page">
-  <div class="form-card">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+    <div class="section-title" style="margin-bottom:0;">📋 أنواع المنتجات</div>
+    <button class="btn" style="padding:8px 16px; font-size:0.85rem;" onclick="toggleAddTypeForm()">➕ إضافة نوع</button>
+  </div>
+
+  <!-- Add form hidden by default -->
+  <div id="add-type-form" class="form-card" style="display:none; margin-bottom:20px;">
     <h2>➕ إضافة نوع منتج جديد</h2>
     <div class="form-row">
       <label>اسم المنتج *</label>
@@ -410,10 +416,12 @@
       </div>
     </div>
     <br />
-    <button class="btn" onclick="addType()">➕ إضافة</button>
+    <div style="display:flex; gap:10px;">
+      <button class="btn" onclick="addType()">✅ حفظ</button>
+      <button class="btn secondary" onclick="toggleAddTypeForm()">إلغاء</button>
+    </div>
   </div>
 
-  <div class="section-title">📋 أنواع المنتجات المحفوظة</div>
   <div class="type-grid" id="type-grid"></div>
 </div>
 
@@ -717,6 +725,11 @@ function openProduct() {
 }
 
 // ===================== PRODUCT TYPES =====================
+function toggleAddTypeForm() {
+  const form = document.getElementById('add-type-form');
+  form.style.display = form.style.display === 'none' ? '' : 'none';
+}
+
 function renderTypes() {
   const types = loadTypes();
   document.getElementById('type-grid').innerHTML = types.map(t => `
@@ -744,6 +757,7 @@ function addType() {
   document.getElementById('type-name').value = '';
   document.getElementById('type-icon').value = '';
   document.getElementById('type-days').value = '';
+  document.getElementById('add-type-form').style.display = 'none';
   toast('✅ تم إضافة النوع!');
   renderTypes();
 }
