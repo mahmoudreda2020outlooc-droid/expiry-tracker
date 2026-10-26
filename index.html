@@ -3,23 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>تتبع صلاحية المنتجات ☕</title>
+  <title>CK - تتبع الصلاحية</title>
+  <meta name="application-name" content="CK" />
+  <meta name="apple-mobile-web-app-title" content="CK" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#c0392b" />
+  <link rel="manifest" href="manifest.json" />
   <style>
     :root {
-      --bg: #1a1208;
-      --card: #2c1f0e;
-      --card2: #3a2a12;
-      --accent: #c8873a;
-      --accent2: #e8a84a;
-      --text: #f5e6cc;
-      --text2: #c4a97a;
+      --bg: #0f0505;
+      --card: #1e0a0a;
+      --card2: #2a1010;
+      --accent: #c0392b;
+      --accent2: #e74c3c;
+      --text: #f5e0e0;
+      --text2: #c49090;
       --green: #4caf82;
       --yellow: #f0c040;
       --red: #e05050;
       --red-bg: #3a1010;
       --yellow-bg: #3a2e00;
       --green-bg: #0a2e1a;
-      --border: #4a3520;
+      --border: #4a1a1a;
       --shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -291,9 +297,10 @@
 <body>
 
 <header>
-  <span>☕</span>
-  <h1>تتبع صلاحية المنتجات</h1>
-  <span>🍽️</span>
+  <div style="font-size:1.5rem; font-weight:900; letter-spacing:2px; color:var(--accent2);">CK</div>
+  <h1>تتبع الصلاحية</h1>
+  <button id="install-btn" onclick="installApp()" style="display:none; background:var(--accent); border:none; color:white; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:bold;">📲 نزّل</button>
+  <span id="header-icon" style="font-size:1.3rem;">🔴</span>
 </header>
 
 <div class="tabs">
@@ -804,6 +811,31 @@ document.getElementById('del-modal').addEventListener('click', e => {
 // ===================== INIT =====================
 loadTypes(); // ensure defaults saved
 renderDashboard();
+
+// ===================== PWA =====================
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-btn').style.display = 'block';
+  document.getElementById('header-icon').style.display = 'none';
+});
+function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => {
+    deferredPrompt = null;
+    document.getElementById('install-btn').style.display = 'none';
+    document.getElementById('header-icon').style.display = 'block';
+  });
+}
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-btn').style.display = 'none';
+  document.getElementById('header-icon').style.display = 'block';
+});
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
 </script>
 </body>
 </html>
