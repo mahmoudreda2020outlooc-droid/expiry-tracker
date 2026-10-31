@@ -532,6 +532,8 @@ function formatDate(d) {
 }
 function formatLeft(ms) {
   if (ms <= 0) return 'منتهية';
+  const totalMins = Math.floor(ms / 60000);
+  if (totalMins < 60) return `${totalMins} دقيقة`;
   const totalHours = Math.floor(ms / 3600000);
   if (totalHours < 24) return `${totalHours} ساعة`;
   const days = Math.floor(totalHours / 24);
@@ -540,6 +542,7 @@ function formatLeft(ms) {
 }
 function getStatus(ms) {
   if (ms <= 0) return 'expired';
+  if (ms < 3600000) return 'expired'; // أقل من ساعة = منتهي عملياً
   if (ms <= 3 * 24 * 3600000) return 'soon';
   return 'ok';
 }
