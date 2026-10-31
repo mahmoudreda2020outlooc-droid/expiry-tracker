@@ -28,57 +28,69 @@
       --border: #4a1a1a;
       --shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      height: 100%;
+      overflow: hidden;
       background: var(--bg);
       color: var(--text);
       font-family: 'Segoe UI', 'Cairo', Tahoma, Arial, sans-serif;
-      min-height: 100vh;
+    }
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      overflow: hidden;
     }
     header {
-      background: linear-gradient(135deg, #2c1f0e, #1a1208);
+      background: linear-gradient(135deg, #2c0a0a, #0f0505);
       border-bottom: 2px solid var(--accent);
-      padding: 16px 20px;
+      padding: 12px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      flex-shrink: 0;
       box-shadow: var(--shadow);
+      z-index: 100;
     }
-    header h1 { font-size: 1.3rem; color: var(--accent2); }
-    header span { font-size: 1.5rem; }
+    header h1 { font-size: 1.1rem; color: var(--accent2); }
     .tabs {
       display: flex;
-      gap: 8px;
-      padding: 16px 20px 0;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg);
-      position: sticky;
-      top: 61px;
-      z-index: 90;
+      border-top: 2px solid var(--border);
+      background: var(--card);
+      flex-shrink: 0;
+      order: 3;
+      z-index: 100;
+      padding-bottom: env(safe-area-inset-bottom);
     }
     .tab {
-      padding: 10px 18px;
-      border-radius: 8px 8px 0 0;
-      border: 1px solid var(--border);
-      border-bottom: none;
+      flex: 1;
+      padding: 10px 4px 8px;
       cursor: pointer;
-      font-size: 0.9rem;
-      background: var(--card);
+      font-size: 0.68rem;
+      background: none;
       color: var(--text2);
       transition: all 0.2s;
+      text-align: center;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
     }
-    .tab.active {
-      background: var(--accent);
-      color: #1a1208;
-      font-weight: bold;
-      border-color: var(--accent);
+    .tab .tab-icon { font-size: 1.4rem; display: block; }
+    .tab.active { color: var(--accent2); }
+    .tab.active .tab-icon { transform: scale(1.1); }
+    #content-area {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      order: 2;
     }
-    .tab:hover:not(.active) { background: var(--card2); color: var(--text); }
-    .page { display: none; padding: 20px; max-width: 900px; margin: 0 auto; }
+    .page { display: none; padding: 14px; max-width: 900px; margin: 0 auto; padding-bottom: 20px; }
     .page.active { display: block; }
+
 
     /* ========== DASHBOARD ========== */
     .stats-row {
@@ -296,6 +308,7 @@
   </style>
 </head>
 <body>
+<div id="app">
 
 <header>
   <div style="font-size:1.5rem; font-weight:900; letter-spacing:2px; color:var(--accent2);">CK</div>
@@ -304,11 +317,9 @@
   <span id="header-icon" style="font-size:1.3rem;">🔴</span>
 </header>
 
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('dashboard')">📊 الرئيسية</div>
-  <div class="tab" onclick="switchTab('open')">➕ فتح منتج</div>
-  <div class="tab" onclick="switchTab('types')">📋 الأنواع</div>
-</div>
+<div id="content-area">
+
+<!-- pages go here -->
 
 <!-- ===================== DASHBOARD ===================== -->
 <div id="tab-dashboard" class="page active">
@@ -448,6 +459,23 @@
   </div>
 </div>
 
+</div><!-- end #content-area -->
+
+<!-- Bottom Tab Bar -->
+<div class="tabs">
+  <div class="tab active" id="tab-btn-dashboard" onclick="switchTab('dashboard')">
+    <span class="tab-icon">📊</span>الرئيسية
+  </div>
+  <div class="tab" id="tab-btn-open" onclick="switchTab('open')">
+    <span class="tab-icon">➕</span>فتح منتج
+  </div>
+  <div class="tab" id="tab-btn-types" onclick="switchTab('types')">
+    <span class="tab-icon">📋</span>الأنواع
+  </div>
+</div>
+
+</div><!-- end #app -->
+
 <script>
 // ===================== DATA =====================
 const DEFAULT_TYPES = [
@@ -527,12 +555,13 @@ function toast(msg) {
 
 // ===================== TABS =====================
 function switchTab(name) {
-  document.querySelectorAll('.tab').forEach((t,i) => {
-    const names = ['dashboard','open','types'];
-    t.classList.toggle('active', names[i] === name);
+  ['dashboard','open','types'].forEach(n => {
+    document.getElementById('tab-btn-' + n).classList.toggle('active', n === name);
   });
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
+  // scroll content to top on tab switch
+  document.getElementById('content-area').scrollTop = 0;
   if (name === 'dashboard') renderDashboard();
   if (name === 'open') renderOpenForm();
   if (name === 'types') renderTypes();
