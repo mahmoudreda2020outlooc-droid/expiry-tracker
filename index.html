@@ -641,9 +641,23 @@ function renderList(id, entries, emptyMsg) {
           ${e.item.notes ? `<div class="meta" style="color:var(--text2);">📝 ${e.item.notes}</div>` : ''}
         </div>
         <div class="badge ${badgeCls}">${label2}</div>
+        <button class="del-btn" title="إعادة تعيين" onclick="resetItem('${e.item.id}')">🔄</button>
         <button class="del-btn" onclick="confirmDelete('${e.item.id}', '${(e.item.name||e.type.name).replace(/'/g,"\\'")}')">🗑️</button>
       </div>`;
   }).join('');
+}
+
+function resetItem(id) {
+  const items = loadItems();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  // Set to today at 12:00 AM (midnight)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  item.openedAt = today.toISOString();
+  saveItems(items);
+  toast('🔄 تم إعادة التعيين من اليوم 12 AM');
+  renderDashboard();
 }
 
 // ===================== OPEN PRODUCT =====================
