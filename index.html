@@ -895,6 +895,21 @@ window.addEventListener('appinstalled', () => {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
 }
+
+// ===================== AUTO REFRESH =====================
+// كل دقيقة يتحدث الداشبورد تلقائياً
+setInterval(() => {
+  const dashActive = document.getElementById('tab-dashboard').classList.contains('active');
+  if (dashActive) renderDashboard();
+}, 60000);
+
+// كمان لما ترجع للتاب بعد ما تتركه (visibility change)
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    const dashActive = document.getElementById('tab-dashboard').classList.contains('active');
+    if (dashActive) renderDashboard();
+  }
+});
 </script>
 </body>
 </html>
