@@ -11,6 +11,7 @@
   <meta name="theme-color" content="#c0392b" />
   <link rel="manifest" href="manifest.json" />
   <style>
+    /* ========== DARK THEME (default) ========== */
     :root {
       --bg: #0f0505;
       --card: #1e0a0a;
@@ -28,6 +29,24 @@
       --border: #4a1a1a;
       --shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
+
+    /* ========== LIGHT THEME ========== */
+    html.light {
+      --bg: #faf5f5;
+      --card: #ffffff;
+      --card2: #f5eaea;
+      --text: #2c0808;
+      --text2: #8a5050;
+      --green: #2e8a5a;
+      --yellow: #b08010;
+      --red: #c0392b;
+      --red-bg: #ffe8e8;
+      --yellow-bg: #fffae0;
+      --green-bg: #e8f8f0;
+      --border: #e0c0c0;
+      --shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     html, body {
       height: 100%;
@@ -35,6 +54,7 @@
       background: var(--bg);
       color: var(--text);
       font-family: 'Segoe UI', 'Cairo', Tahoma, Arial, sans-serif;
+      transition: background 0.3s, color 0.3s;
     }
     #app {
       display: flex;
@@ -45,7 +65,7 @@
     header {
       background: linear-gradient(135deg, #2c0a0a, #0f0505);
       border-bottom: 2px solid var(--accent);
-      padding: 12px 16px;
+      padding: 10px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -53,7 +73,23 @@
       box-shadow: var(--shadow);
       z-index: 100;
     }
-    header h1 { font-size: 1.1rem; color: var(--accent2); }
+    html.light header { background: linear-gradient(135deg, #c0392b, #922b21); }
+    header h1 { font-size: 1rem; color: #fff; }
+    .header-ck { font-size: 1.4rem; font-weight: 900; letter-spacing: 2px; color: #fff; }
+    .header-actions { display: flex; gap: 6px; align-items: center; }
+    .header-icon-btn {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 5px 8px;
+      transition: background 0.2s;
+    }
+    .header-icon-btn:hover { background: rgba(255,255,255,0.3); }
+
+    /* ========== TABS ========== */
     .tabs {
       display: flex;
       border-top: 2px solid var(--border);
@@ -63,6 +99,25 @@
       z-index: 100;
       padding-bottom: env(safe-area-inset-bottom);
     }
+    .tab {
+      flex: 1;
+      padding: 9px 4px 7px;
+      cursor: pointer;
+      font-size: 0.62rem;
+      background: none;
+      color: var(--text2);
+      transition: all 0.2s;
+      text-align: center;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+    .tab .tab-icon { font-size: 1.3rem; display: block; }
+    .tab.active { color: var(--accent2); }
+    .tab.active .tab-icon { transform: scale(1.1); }
+
     #footer-credit {
       order: 4;
       text-align: center;
@@ -75,24 +130,8 @@
       letter-spacing: 0.06em;
       flex-shrink: 0;
     }
-    .tab {
-      flex: 1;
-      padding: 10px 4px 8px;
-      cursor: pointer;
-      font-size: 0.68rem;
-      background: none;
-      color: var(--text2);
-      transition: all 0.2s;
-      text-align: center;
-      border: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-    }
-    .tab .tab-icon { font-size: 1.4rem; display: block; }
-    .tab.active { color: var(--accent2); }
-    .tab.active .tab-icon { transform: scale(1.1); }
+    html.light #footer-credit { color: var(--accent); }
+
     #content-area {
       flex: 1;
       overflow-y: auto;
@@ -103,23 +142,54 @@
     .page { display: none; padding: 14px; max-width: 900px; margin: 0 auto; padding-bottom: 20px; }
     .page.active { display: block; }
 
+    /* ========== SEARCH & SORT ========== */
+    #search-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      align-items: center;
+    }
+    #search-input {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 14px;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: inherit;
+      direction: rtl;
+      transition: border-color 0.2s;
+    }
+    #search-input:focus { outline: none; border-color: var(--accent); }
+    #sort-select {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 8px;
+      color: var(--text);
+      font-size: 0.78rem;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    #sort-select:focus { outline: none; }
 
     /* ========== DASHBOARD ========== */
     .stats-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
+      gap: 10px;
+      margin-bottom: 16px;
     }
     .stat-card {
       background: var(--card);
       border-radius: 12px;
-      padding: 16px;
+      padding: 14px 8px;
       text-align: center;
       border: 1px solid var(--border);
     }
-    .stat-card .num { font-size: 2rem; font-weight: bold; }
-    .stat-card .lbl { font-size: 0.8rem; color: var(--text2); margin-top: 4px; }
+    .stat-card .num { font-size: 1.8rem; font-weight: bold; }
+    .stat-card .lbl { font-size: 0.75rem; color: var(--text2); margin-top: 4px; }
     .stat-card.red { border-color: var(--red); background: var(--red-bg); }
     .stat-card.yellow { border-color: var(--yellow); background: var(--yellow-bg); }
     .stat-card.green { border-color: var(--green); background: var(--green-bg); }
@@ -128,37 +198,37 @@
     .stat-card.green .num { color: var(--green); }
 
     .section-title {
-      font-size: 1rem;
+      font-size: 0.95rem;
       color: var(--accent2);
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
       gap: 8px;
     }
+    html.light .section-title { color: var(--accent); }
     .product-list { display: flex; flex-direction: column; gap: 10px; }
     .product-card {
       background: var(--card);
       border-radius: 12px;
-      padding: 14px 16px;
+      padding: 12px 14px;
       border-right: 4px solid var(--green);
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
       transition: transform 0.15s;
-      cursor: default;
     }
     .product-card:hover { transform: translateX(-2px); }
     .product-card.yellow { border-color: var(--yellow); }
     .product-card.red { border-color: var(--red); background: var(--red-bg); }
-    .product-card.expired { border-color: #555; opacity: 0.6; }
-    .product-card .info { flex: 1; }
-    .product-card .name { font-weight: bold; font-size: 1rem; }
-    .product-card .meta { font-size: 0.8rem; color: var(--text2); margin-top: 4px; }
+    .product-card.expired { border-color: #555; opacity: 0.7; }
+    html.light .product-card.expired { border-color: #bbb; }
+    .product-card .info { flex: 1; min-width: 0; }
+    .product-card .name { font-weight: bold; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .product-card .meta { font-size: 0.75rem; color: var(--text2); margin-top: 3px; }
     .product-card .badge {
-      padding: 6px 14px;
+      padding: 5px 10px;
       border-radius: 20px;
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       font-weight: bold;
       white-space: nowrap;
       flex-shrink: 0;
@@ -167,43 +237,42 @@
     .badge.yellow { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow); }
     .badge.red { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
     .badge.expired { background: #222; color: #888; border: 1px solid #555; }
+    html.light .badge.expired { background: #eee; color: #999; border-color: #ccc; }
+
+    .card-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
     .del-btn {
       background: none;
       border: none;
-      color: #555;
+      color: var(--text2);
       cursor: pointer;
-      font-size: 1.1rem;
-      padding: 4px 8px;
+      font-size: 1rem;
+      padding: 3px 6px;
       border-radius: 6px;
       transition: color 0.2s, background 0.2s;
+      line-height: 1;
     }
-    .del-btn:hover { color: var(--red); background: var(--red-bg); }
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text2);
-    }
-    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+    .del-btn:hover { color: var(--accent2); background: var(--red-bg); }
 
     /* ========== OPEN PRODUCT ========== */
     .form-card {
       background: var(--card);
       border-radius: 16px;
-      padding: 24px;
+      padding: 20px;
       border: 1px solid var(--border);
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
-    .form-card h2 { color: var(--accent2); margin-bottom: 20px; font-size: 1.1rem; }
-    .form-row { margin-bottom: 16px; }
-    .form-row label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text2); }
+    .form-card h2 { color: var(--accent2); margin-bottom: 18px; font-size: 1.05rem; }
+    html.light .form-card h2 { color: var(--accent); }
+    .form-row { margin-bottom: 14px; }
+    .form-row label { display: block; margin-bottom: 5px; font-size: 0.88rem; color: var(--text2); }
     .form-row input, .form-row select, .form-row textarea {
       width: 100%;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 10px 14px;
+      padding: 10px 12px;
       color: var(--text);
-      font-size: 0.95rem;
+      font-size: 0.93rem;
       font-family: inherit;
       direction: rtl;
       transition: border-color 0.2s;
@@ -212,15 +281,15 @@
       outline: none;
       border-color: var(--accent);
     }
-    .form-row textarea { resize: vertical; min-height: 60px; }
-    .form-row select option { background: #2c1f0e; }
+    .form-row textarea { resize: vertical; min-height: 55px; }
+
     .btn {
       background: var(--accent);
-      color: #1a1208;
+      color: #fff;
       border: none;
       border-radius: 10px;
-      padding: 12px 28px;
-      font-size: 1rem;
+      padding: 11px 24px;
+      font-size: 0.95rem;
       font-weight: bold;
       cursor: pointer;
       transition: background 0.2s, transform 0.1s;
@@ -237,45 +306,62 @@
     .btn.danger { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
     .btn.danger:hover { background: var(--red); color: white; }
 
-    /* ========== PRODUCT TYPES ========== */
+    /* ========== TYPES ========== */
     .type-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 12px;
-      margin-top: 16px;
+      gap: 10px;
+      margin-top: 14px;
     }
     .type-card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 14px;
+      padding: 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
     }
-    .type-card .type-icon { font-size: 1.5rem; }
+    .type-card .type-icon { font-size: 1.4rem; }
     .type-card .type-info { flex: 1; }
-    .type-card .type-name { font-weight: bold; font-size: 0.95rem; }
-    .type-card .type-dur { font-size: 0.8rem; color: var(--text2); margin-top: 2px; }
-    .type-card .del-btn { font-size: 0.9rem; }
+    .type-card .type-name { font-weight: bold; font-size: 0.92rem; }
+    .type-card .type-dur { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
+
+    /* ========== STATS ========== */
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .big-stat {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
 
     /* ========== TOAST ========== */
     #toast {
       position: fixed;
-      bottom: 24px;
+      bottom: 90px;
       left: 50%;
       transform: translateX(-50%) translateY(80px);
       background: var(--accent);
-      color: #1a1208;
-      padding: 12px 24px;
+      color: #fff;
+      padding: 11px 22px;
       border-radius: 30px;
       font-weight: bold;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       box-shadow: var(--shadow);
       transition: transform 0.3s ease;
       z-index: 999;
       pointer-events: none;
+      white-space: nowrap;
     }
     #toast.show { transform: translateX(-50%) translateY(0); }
 
@@ -288,70 +374,82 @@
       z-index: 200;
       align-items: center;
       justify-content: center;
+      padding: 16px;
     }
     .modal-overlay.open { display: flex; }
     .modal {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 28px;
+      padding: 24px;
       max-width: 420px;
-      width: 90%;
+      width: 100%;
       box-shadow: var(--shadow);
+      max-height: 90vh;
+      overflow-y: auto;
     }
-    .modal h3 { color: var(--accent2); margin-bottom: 20px; }
-    .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: center; flex-wrap: wrap; }
+    .modal h3 { color: var(--accent2); margin-bottom: 18px; }
+    html.light .modal h3 { color: var(--accent); }
+    .modal-actions { display: flex; gap: 10px; margin-top: 18px; justify-content: center; flex-wrap: wrap; }
     .modal-actions .btn { flex: 1; min-width: 100px; text-align: center; }
 
     /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
     @media (max-width: 500px) {
-      .stats-row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-      .stat-card { padding: 12px 8px; }
+      .stats-row { gap: 6px; }
+      .stat-card { padding: 10px 6px; }
       .stat-card .num { font-size: 1.5rem; }
-      .tabs { padding: 12px 12px 0; gap: 4px; }
-      .tab { padding: 8px 12px; font-size: 0.8rem; }
-      .page { padding: 14px; }
+      .page { padding: 12px; }
       .type-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 <div id="app">
 
 <header>
-  <div style="font-size:1.5rem; font-weight:900; letter-spacing:2px; color:var(--accent2);">CK</div>
+  <div class="header-ck">CK</div>
   <h1>تتبع الصلاحية</h1>
-  <button id="install-btn" onclick="installApp()" style="display:none; background:var(--accent); border:none; color:white; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:bold;">📲 نزّل</button>
-  <span id="header-icon" style="font-size:1.3rem;">🔴</span>
+  <div class="header-actions">
+    <button id="notif-btn" class="header-icon-btn" onclick="requestNotifications()" title="تفعيل الإشعارات">🔔</button>
+    <button id="theme-btn" class="header-icon-btn" onclick="toggleTheme()" title="تغيير الثيم">☀️</button>
+    <button id="install-btn" onclick="installApp()" style="display:none; background:rgba(255,255,255,0.2); border:none; color:white; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:bold;">📲 نزّل</button>
+    <span id="header-icon" style="font-size:1.2rem;">🔴</span>
+  </div>
 </header>
 
 <div id="content-area">
 
-<!-- pages go here -->
-
 <!-- ===================== DASHBOARD ===================== -->
 <div id="tab-dashboard" class="page active">
   <div class="stats-row" id="stats-row"></div>
-
   <div id="alert-section"></div>
 
-  <!-- أزرار التصدير -->
-  <div style="display:flex; gap:8px; margin-bottom:16px;">
-    <button class="btn secondary" style="flex:1; font-size:0.85rem; padding:10px 6px;" onclick="exportWhatsApp()">📲 مشاركة عبر واتساب</button>
+  <!-- واتساب -->
+  <div style="display:flex; gap:8px; margin-bottom:14px;">
+    <button class="btn secondary" style="flex:1; font-size:0.85rem; padding:9px 6px;" onclick="exportWhatsApp()">📲 مشاركة عبر واتساب</button>
+  </div>
+
+  <!-- بحث وترتيب -->
+  <div id="search-bar">
+    <input id="search-input" type="text" placeholder="🔍 بحث في المنتجات..." oninput="renderDashboard()" />
+    <select id="sort-select" onchange="renderDashboard()">
+      <option value="expiry">⏱ الأقرب انتهاءً</option>
+      <option value="name">🔤 الاسم</option>
+      <option value="opened">📅 تاريخ الفتح</option>
+    </select>
   </div>
 
   <div class="section-title">⚠️ تنتهي قريباً (خلال 3 أيام)</div>
   <div class="product-list" id="list-soon"></div>
 
-  <div class="section-title" style="margin-top:20px">✅ صالحة</div>
+  <div class="section-title" style="margin-top:18px">✅ صالحة</div>
   <div class="product-list" id="list-ok"></div>
 
-  <div class="section-title" style="margin-top:20px">❌ منتهية الصلاحية</div>
+  <div class="section-title" style="margin-top:18px">❌ منتهية الصلاحية</div>
   <div class="product-list" id="list-expired"></div>
 </div>
 
@@ -360,13 +458,11 @@
   <div class="form-card">
     <h2>➕ تسجيل فتح منتج جديد</h2>
 
-    <!-- Mode Toggle -->
-    <div style="display:flex; gap:8px; margin-bottom:20px;">
-      <button id="mode-btn-existing" class="btn" style="flex:1; padding:10px;" onclick="setMode('existing')">📋 من القائمة</button>
-      <button id="mode-btn-custom" class="btn secondary" style="flex:1; padding:10px;" onclick="setMode('custom')">✏️ منتج مخصص</button>
+    <div style="display:flex; gap:8px; margin-bottom:18px;">
+      <button id="mode-btn-existing" class="btn" style="flex:1; padding:9px;" onclick="setMode('existing')">📋 من القائمة</button>
+      <button id="mode-btn-custom" class="btn secondary" style="flex:1; padding:9px;" onclick="setMode('custom')">✏️ منتج مخصص</button>
     </div>
 
-    <!-- EXISTING TYPE MODE -->
     <div id="mode-existing">
       <div class="form-row">
         <label>نوع المنتج *</label>
@@ -376,7 +472,6 @@
       </div>
     </div>
 
-    <!-- CUSTOM MODE -->
     <div id="mode-custom" style="display:none;">
       <div class="form-row">
         <label>اسم المنتج *</label>
@@ -403,8 +498,7 @@
       </div>
     </div>
 
-    <!-- Common fields -->
-    <div class="form-row" style="margin-top:16px;">
+    <div class="form-row" style="margin-top:14px;">
       <label>اسم إضافي / وصف (اختياري)</label>
       <input id="open-name" type="text" placeholder="مثلاً: سيروب فانيلا توفاني" />
     </div>
@@ -416,20 +510,23 @@
       <label>ملاحظات (اختياري)</label>
       <textarea id="open-notes" placeholder="أي ملاحظة إضافية..."></textarea>
     </div>
-    <div id="open-preview" style="margin-bottom:16px; display:none; padding:12px; background:var(--green-bg); border-radius:8px; border:1px solid var(--green); color:var(--green); font-size:0.9rem;"></div>
-    <button class="btn" onclick="openProduct()">✅ تسجيل الفتح</button>
+    <div id="open-preview" style="margin-bottom:14px; display:none; padding:11px; background:var(--green-bg); border-radius:8px; border:1px solid var(--green); color:var(--green); font-size:0.88rem;"></div>
+    <button class="btn" style="width:100%;" onclick="openProduct()">✅ تسجيل الفتح</button>
   </div>
 </div>
 
-<!-- ===================== PRODUCT TYPES ===================== -->
-<div id="tab-types" class="page">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-    <div class="section-title" style="margin-bottom:0;">📋 أنواع المنتجات</div>
-    <button class="btn" style="padding:8px 16px; font-size:0.85rem;" onclick="toggleAddTypeForm()">➕ إضافة نوع</button>
-  </div>
+<!-- ===================== STATS ===================== -->
+<div id="tab-stats" class="page">
+  <div id="stats-content"></div>
+</div>
 
-  <!-- Add form hidden by default -->
-  <div id="add-type-form" class="form-card" style="display:none; margin-bottom:20px;">
+<!-- ===================== PRODUCT TYPES (hidden) ===================== -->
+<div id="tab-types" class="page">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+    <div class="section-title" style="margin-bottom:0;">📋 أنواع المنتجات</div>
+    <button class="btn" style="padding:7px 14px; font-size:0.82rem;" onclick="toggleAddTypeForm()">➕ إضافة نوع</button>
+  </div>
+  <div id="add-type-form" class="form-card" style="display:none; margin-bottom:18px;">
     <h2>➕ إضافة نوع منتج جديد</h2>
     <div class="form-row">
       <label>اسم المنتج *</label>
@@ -458,7 +555,6 @@
       <button class="btn secondary" onclick="toggleAddTypeForm()">إلغاء</button>
     </div>
   </div>
-
   <div class="type-grid" id="type-grid"></div>
 </div>
 
@@ -472,7 +568,30 @@
     <p id="del-msg" style="color:var(--text2);"></p>
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeModal()">إلغاء</button>
-      <button class="btn danger" id="del-confirm-btn">حذف</button>
+      <button class="btn danger" id="del-confirm-btn">🗑️ حذف</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <h3>✏️ تعديل المنتج</h3>
+    <div class="form-row">
+      <label>الاسم الإضافي / الوصف</label>
+      <input id="edit-name" type="text" placeholder="اسم اختياري..." />
+    </div>
+    <div class="form-row">
+      <label>تاريخ ووقت الفتح</label>
+      <input id="edit-datetime" type="datetime-local" />
+    </div>
+    <div class="form-row">
+      <label>ملاحظات</label>
+      <textarea id="edit-notes" placeholder="ملاحظات..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeEditModal()">إلغاء</button>
+      <button class="btn" onclick="saveEdit()">💾 حفظ التعديل</button>
     </div>
   </div>
 </div>
@@ -486,6 +605,9 @@
   </div>
   <div class="tab" id="tab-btn-open" onclick="switchTab('open')">
     <span class="tab-icon">➕</span>فتح منتج
+  </div>
+  <div class="tab" id="tab-btn-stats" onclick="switchTab('stats')">
+    <span class="tab-icon">📈</span>إحصائيات
   </div>
   <div class="tab" id="tab-btn-types" style="display:none;"></div>
 </div>
@@ -524,10 +646,7 @@ const DEFAULT_TYPES = [
 
 function loadTypes() {
   const saved = localStorage.getItem('product_types');
-  if (!saved) {
-    localStorage.setItem('product_types', JSON.stringify(DEFAULT_TYPES));
-    return DEFAULT_TYPES;
-  }
+  if (!saved) { localStorage.setItem('product_types', JSON.stringify(DEFAULT_TYPES)); return DEFAULT_TYPES; }
   return JSON.parse(saved);
 }
 function saveTypes(types) { localStorage.setItem('product_types', JSON.stringify(types)); }
@@ -537,6 +656,14 @@ function loadItems() {
   return saved ? JSON.parse(saved) : [];
 }
 function saveItems(items) { localStorage.setItem('opened_items', JSON.stringify(items)); }
+
+function loadHistory() { return JSON.parse(localStorage.getItem('deleted_history') || '[]'); }
+function saveHistory(item, typeName) {
+  const h = loadHistory();
+  h.unshift({ ...item, typeName, deletedAt: new Date().toISOString() });
+  if (h.length > 100) h.splice(100);
+  localStorage.setItem('deleted_history', JSON.stringify(h));
+}
 
 // ===================== HELPERS =====================
 function now() { return new Date(); }
@@ -562,7 +689,7 @@ function formatLeft(ms) {
 }
 function getStatus(ms) {
   if (ms <= 0) return 'expired';
-  if (ms < 3600000) return 'expired'; // أقل من ساعة = منتهي عملياً
+  if (ms < 3600000) return 'expired';
   if (ms <= 3 * 24 * 3600000) return 'soon';
   return 'ok';
 }
@@ -574,27 +701,80 @@ function toast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// ===================== TABS =====================
-function switchTab(name) {
-  ['dashboard','open','types'].forEach(n => {
-    document.getElementById('tab-btn-' + n).classList.toggle('active', n === name);
-  });
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  // scroll content to top on tab switch
-  document.getElementById('content-area').scrollTop = 0;
-  if (name === 'dashboard') renderDashboard();
-  if (name === 'open') renderOpenForm();
-  if (name === 'types') renderTypes();
+// ===================== THEME =====================
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  document.getElementById('theme-btn').textContent = isLight ? '🌙' : '☀️';
+}
+function loadTheme() {
+  if (localStorage.getItem('theme') === 'light') {
+    document.documentElement.classList.add('light');
+    document.getElementById('theme-btn').textContent = '🌙';
+  }
 }
 
-// ===================== DASHBOARD =====================
-function renderDashboard() {
+// ===================== NOTIFICATIONS =====================
+async function requestNotifications() {
+  if (!('Notification' in window)) { toast('⚠️ المتصفح لا يدعم الإشعارات'); return; }
+  if (Notification.permission === 'granted') { toast('✅ الإشعارات مفعّلة بالفعل'); return; }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    toast('✅ تم تفعيل الإشعارات!');
+    document.getElementById('notif-btn').style.opacity = '1';
+  } else {
+    toast('❌ لم يتم السماح بالإشعارات');
+  }
+}
+
+function checkAndNotify() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
   const items = loadItems();
   const types = loadTypes();
   const typeMap = {};
   types.forEach(t => typeMap[t.id] = t);
+  const notified = JSON.parse(localStorage.getItem('notified_ids') || '[]');
+  const newNotified = [...notified];
 
+  items.forEach(item => {
+    const type = typeMap[item.typeId];
+    if (!type) return;
+    const exp = expiryDate(item.openedAt, type);
+    const ms = msLeft(exp);
+    const label = item.name || type.name;
+
+    if (ms <= 0 && !notified.includes('exp_' + item.id)) {
+      new Notification('CK ⚠️ منتج منتهي', { body: `❌ ${label} انتهت صلاحيته!`, icon: 'icon-192.png' });
+      newNotified.push('exp_' + item.id);
+    } else if (ms > 0 && ms <= 24 * 3600000 && !notified.includes('soon_' + item.id)) {
+      new Notification('CK ⏰ تنبيه صلاحية', { body: `⚠️ ${label} تنتهي خلال ${formatLeft(ms)}`, icon: 'icon-192.png' });
+      newNotified.push('soon_' + item.id);
+    }
+  });
+  localStorage.setItem('notified_ids', JSON.stringify(newNotified));
+}
+
+// ===================== TABS =====================
+function switchTab(name) {
+  ['dashboard','open','stats','types'].forEach(n => {
+    const btn = document.getElementById('tab-btn-' + n);
+    if (btn) btn.classList.toggle('active', n === name);
+  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('content-area').scrollTop = 0;
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'open') renderOpenForm();
+  if (name === 'types') renderTypes();
+  if (name === 'stats') renderStats();
+}
+
+// ===================== DASHBOARD =====================
+function buildEntries() {
+  const items = loadItems();
+  const types = loadTypes();
+  const typeMap = {};
+  types.forEach(t => typeMap[t.id] = t);
   const expired = [], soon = [], ok = [];
   items.forEach(item => {
     const type = typeMap[item.typeId];
@@ -607,72 +787,82 @@ function renderDashboard() {
     else if (s === 'soon') soon.push(entry);
     else ok.push(entry);
   });
+  return { expired, soon, ok };
+}
 
-  // Stats
+function renderDashboard() {
+  const { expired, soon, ok } = buildEntries();
+
   document.getElementById('stats-row').innerHTML = `
-    <div class="stat-card red">
-      <div class="num">${expired.length}</div>
-      <div class="lbl">❌ منتهية</div>
-    </div>
-    <div class="stat-card yellow">
-      <div class="num">${soon.length}</div>
-      <div class="lbl">⚠️ تنتهي قريباً</div>
-    </div>
-    <div class="stat-card green">
-      <div class="num">${ok.length}</div>
-      <div class="lbl">✅ صالحة</div>
-    </div>
+    <div class="stat-card red"><div class="num">${expired.length}</div><div class="lbl">❌ منتهية</div></div>
+    <div class="stat-card yellow"><div class="num">${soon.length}</div><div class="lbl">⚠️ قريباً</div></div>
+    <div class="stat-card green"><div class="num">${ok.length}</div><div class="lbl">✅ صالحة</div></div>
   `;
 
-  // Alert banner
   const alertSec = document.getElementById('alert-section');
-  if (expired.length > 0) {
-    alertSec.innerHTML = `<div style="background:var(--red-bg);border:1px solid var(--red);border-radius:10px;padding:12px 16px;margin-bottom:16px;color:var(--red);font-weight:bold;">
-      ⚠️ تنبيه: ${expired.length} منتج منتهي الصلاحية يحتاج مراجعة فورية!
-    </div>`;
-  } else {
-    alertSec.innerHTML = '';
+  alertSec.innerHTML = expired.length > 0
+    ? `<div style="background:var(--red-bg);border:1px solid var(--red);border-radius:10px;padding:11px 14px;margin-bottom:14px;color:var(--red);font-weight:bold;">
+        ⚠️ ${expired.length} منتج منتهي الصلاحية يحتاج مراجعة فورية!
+       </div>`
+    : '';
+
+  const query = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
+  const sortMode = document.getElementById('sort-select')?.value || 'expiry';
+
+  function filterAndSort(arr) {
+    let res = arr;
+    if (query) {
+      res = arr.filter(e => (e.item.name || e.type.name).toLowerCase().includes(query) ||
+        e.type.name.toLowerCase().includes(query));
+    }
+    if (sortMode === 'name') res.sort((a,b) => (a.item.name||a.type.name).localeCompare(b.item.name||b.type.name, 'ar'));
+    else if (sortMode === 'opened') res.sort((a,b) => new Date(b.item.openedAt) - new Date(a.item.openedAt));
+    else res.sort((a,b) => a.ms - b.ms);
+    return res;
   }
 
-  renderList('list-soon', soon, 'لا يوجد منتجات تنتهي قريباً ✨');
-  renderList('list-ok', ok, 'لا يوجد منتجات صالحة مسجلة');
-  renderList('list-expired', expired, 'لا يوجد منتجات منتهية ✅');
+  renderList('list-soon',    filterAndSort(soon),    'لا يوجد منتجات تنتهي قريباً ✨');
+  renderList('list-ok',      filterAndSort(ok),      'لا يوجد منتجات صالحة مسجلة');
+  renderList('list-expired', filterAndSort(expired), 'لا يوجد منتجات منتهية ✅');
+
+  checkAndNotify();
 }
 
 function renderList(id, entries, emptyMsg) {
   const el = document.getElementById(id);
   if (entries.length === 0) {
-    el.innerHTML = `<div style="color:var(--text2);font-size:0.9rem;padding:12px 0;">${emptyMsg}</div>`;
+    el.innerHTML = `<div style="color:var(--text2);font-size:0.88rem;padding:10px 0;">${emptyMsg}</div>`;
     return;
   }
-  entries.sort((a,b) => a.ms - b.ms);
   el.innerHTML = entries.map(e => {
-    const cls = e.status === 'expired' ? 'expired' : e.status;
+    const cls = e.status === 'expired' ? 'expired' : e.status === 'soon' ? 'yellow' : '';
     const badgeCls = e.status === 'expired' ? 'expired' : e.status === 'soon' ? 'yellow' : 'green';
-    const label = e.status === 'expired'
-      ? `انتهت ${formatDate(e.exp)}`
-      : `باقي ${formatLeft(e.ms)}`;
     const label2 = e.status === 'expired' ? 'منتهي' : formatLeft(e.ms);
+    const safeName = (e.item.name||e.type.name).replace(/'/g,"\\'");
     return `
       <div class="product-card ${cls}">
-        <span style="font-size:1.5rem;flex-shrink:0;">${e.type.icon}</span>
+        <span style="font-size:1.4rem;flex-shrink:0;">${e.type.icon}</span>
         <div class="info">
           <div class="name">${e.item.name || e.type.name}</div>
           <div class="meta">فُتح: ${formatDate(e.item.openedAt)} · ينتهي: ${formatDate(e.exp)}</div>
           ${e.item.notes ? `<div class="meta" style="color:var(--text2);">📝 ${e.item.notes}</div>` : ''}
         </div>
         <div class="badge ${badgeCls}">${label2}</div>
-        <button class="del-btn" title="إعادة تعيين" onclick="resetItem('${e.item.id}')">🔄</button>
-        <button class="del-btn" onclick="confirmDelete('${e.item.id}', '${(e.item.name||e.type.name).replace(/'/g,"\\'")}')">🗑️</button>
+        <div class="card-actions">
+          <button class="del-btn" title="تعديل" onclick="editItem('${e.item.id}')">✏️</button>
+          <button class="del-btn" title="إعادة تعيين لليوم" onclick="resetItem('${e.item.id}')">🔄</button>
+          <button class="del-btn" title="فتح مرة تانية" onclick="reopenItem('${e.item.id}')">🔁</button>
+          <button class="del-btn" title="حذف" onclick="confirmDelete('${e.item.id}', '${safeName}')">🗑️</button>
+        </div>
       </div>`;
   }).join('');
 }
 
+// ===================== ITEM ACTIONS =====================
 function resetItem(id) {
   const items = loadItems();
   const item = items.find(i => i.id === id);
   if (!item) return;
-  // Set to today at 12:00 AM (midnight)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   item.openedAt = today.toISOString();
@@ -680,6 +870,60 @@ function resetItem(id) {
   toast('🔄 تم إعادة التعيين من اليوم 12 AM');
   renderDashboard();
 }
+
+function reopenItem(id) {
+  const items = loadItems();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  switchTab('open');
+  setTimeout(() => {
+    setMode('existing');
+    const sel = document.getElementById('open-type');
+    if (sel) {
+      sel.value = item.typeId;
+      onTypeChange();
+    }
+    // reset date to now
+    const d = new Date(); d.setSeconds(0,0);
+    document.getElementById('open-datetime').value = d.toISOString().slice(0,16);
+    toast('📋 اضغط تسجيل الفتح لفتح نسخة جديدة');
+  }, 150);
+}
+
+// ===================== EDIT ITEM =====================
+let editingId = null;
+function editItem(id) {
+  const items = loadItems();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  editingId = id;
+  document.getElementById('edit-name').value = item.name || '';
+  document.getElementById('edit-notes').value = item.notes || '';
+  const d = new Date(item.openedAt); d.setSeconds(0,0);
+  document.getElementById('edit-datetime').value = d.toISOString().slice(0,16);
+  document.getElementById('edit-modal').classList.add('open');
+}
+function saveEdit() {
+  if (!editingId) return;
+  const items = loadItems();
+  const item = items.find(i => i.id === editingId);
+  if (!item) return;
+  item.name = document.getElementById('edit-name').value.trim();
+  item.notes = document.getElementById('edit-notes').value.trim();
+  const dateVal = document.getElementById('edit-datetime').value;
+  if (dateVal) item.openedAt = new Date(dateVal).toISOString();
+  saveItems(items);
+  closeEditModal();
+  renderDashboard();
+  toast('✅ تم التعديل!');
+}
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  editingId = null;
+}
+document.getElementById('edit-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('edit-modal')) closeEditModal();
+});
 
 // ===================== OPEN PRODUCT =====================
 let currentMode = 'existing';
@@ -699,10 +943,7 @@ function renderOpenForm() {
   const val = sel.value;
   sel.innerHTML = '<option value="">-- اختر النوع --</option>' +
     types.map(t => `<option value="${t.id}" ${t.id===val?'selected':''}>${t.icon} ${t.name} (${t.days} ${t.unit==='hours'?'ساعة':'يوم'})</option>`).join('');
-
-  // Set current datetime
-  const nowD = new Date();
-  nowD.setSeconds(0,0);
+  const nowD = new Date(); nowD.setSeconds(0,0);
   document.getElementById('open-datetime').value = nowD.toISOString().slice(0,16);
   setMode(currentMode);
   onTypeChange();
@@ -730,8 +971,7 @@ function onCustomChange() {
   const dateVal = document.getElementById('open-datetime').value;
   const preview = document.getElementById('open-preview');
   if (!name || !days || !dateVal) { preview.style.display = 'none'; return; }
-  const fakeType = { days, unit };
-  const exp = expiryDate(dateVal, fakeType);
+  const exp = expiryDate(dateVal, { days, unit });
   preview.style.display = 'block';
   preview.innerHTML = `✅ <strong>${name}</strong> سينتهي بتاريخ: <strong>${formatDate(exp)}</strong> — صالح لمدة ${days} ${unit==='hours'?'ساعة':'يوم'}`;
 }
@@ -748,44 +988,26 @@ function openProduct() {
     typeId = document.getElementById('open-type').value;
     if (!typeId) { toast('⚠️ اختر نوع المنتج'); return; }
     displayName = extraName;
-
   } else {
-    // Custom mode
     const customName = document.getElementById('custom-name').value.trim();
     const customDays = parseInt(document.getElementById('custom-days').value);
     const customUnit = document.getElementById('custom-unit').value;
     if (!customName) { toast('⚠️ اكتب اسم المنتج'); return; }
     if (!customDays || customDays < 1) { toast('⚠️ أدخل مدة صلاحية صحيحة'); return; }
-
-    // Save to types if checkbox checked
     const shouldSave = document.getElementById('custom-save').checked;
     typeId = 'custom_' + Date.now();
     const types = loadTypes();
-    const newType = { id: typeId, name: customName, icon: '📦', days: customDays, unit: customUnit };
+    const newType = { id: typeId, name: customName, icon: '📦', days: customDays, unit: customUnit, _temp: !shouldSave };
     types.push(newType);
     saveTypes(types);
-
     displayName = extraName || '';
-
-    if (!shouldSave) {
-      // Mark as temporary — we still saved to types for rendering, but flag it
-      newType._temp = true;
-      saveTypes(types);
-    }
   }
 
   const items = loadItems();
-  items.push({
-    id: Date.now().toString(),
-    typeId,
-    name: displayName,
-    openedAt: new Date(dateVal).toISOString(),
-    notes,
-  });
+  items.push({ id: Date.now().toString(), typeId, name: displayName, openedAt: new Date(dateVal).toISOString(), notes });
   saveItems(items);
   toast('✅ تم تسجيل الفتح!');
 
-  // Reset form
   document.getElementById('open-type').value = '';
   document.getElementById('open-name').value = '';
   document.getElementById('open-notes').value = '';
@@ -801,7 +1023,6 @@ function toggleAddTypeForm() {
   const form = document.getElementById('add-type-form');
   form.style.display = form.style.display === 'none' ? '' : 'none';
 }
-
 function renderTypes() {
   const types = loadTypes();
   document.getElementById('type-grid').innerHTML = types.map(t => `
@@ -815,7 +1036,6 @@ function renderTypes() {
     </div>
   `).join('');
 }
-
 function addType() {
   const name = document.getElementById('type-name').value.trim();
   const icon = document.getElementById('type-icon').value.trim() || '📦';
@@ -834,6 +1054,65 @@ function addType() {
   renderTypes();
 }
 
+// ===================== STATS =====================
+function renderStats() {
+  const items = loadItems();
+  const types = loadTypes();
+  const typeMap = {};
+  types.forEach(t => typeMap[t.id] = t);
+  const history = loadHistory();
+
+  // Type counts
+  const typeCounts = {};
+  items.forEach(item => {
+    typeCounts[item.typeId] = (typeCounts[item.typeId] || 0) + 1;
+  });
+  const topEntry = Object.entries(typeCounts).sort((a,b) => b[1]-a[1])[0];
+  const topName  = topEntry ? (typeMap[topEntry[0]]?.name || topEntry[0]) : null;
+  const topIcon  = topEntry ? (typeMap[topEntry[0]]?.icon || '📦') : '';
+
+  // This week
+  const weekAgo = Date.now() - 7 * 24 * 3600000;
+  const thisWeek = items.filter(i => new Date(i.openedAt).getTime() >= weekAgo).length;
+
+  document.getElementById('stats-content').innerHTML = `
+    <div class="form-card">
+      <h2>📊 إحصائيات عامة</h2>
+      <div class="big-stat">
+        <div class="stat-card green"><div class="num">${items.length}</div><div class="lbl">منتج مسجل الآن</div></div>
+        <div class="stat-card yellow"><div class="num">${thisWeek}</div><div class="lbl">فُتح هذا الأسبوع</div></div>
+        <div class="stat-card red"><div class="num">${history.length}</div><div class="lbl">محذوف من قبل</div></div>
+        <div class="stat-card"><div class="num">${items.length + history.length}</div><div class="lbl">إجمالي المسجلات</div></div>
+      </div>
+      ${topName ? `
+        <div style="background:var(--card2);padding:12px 14px;border-radius:10px;border:1px solid var(--border);font-size:0.95rem;">
+          🏆 أكثر منتج مفتوح حالياً: <strong>${topIcon} ${topName}</strong>
+          <span style="color:var(--text2);"> (${topEntry[1]} مرة)</span>
+        </div>` : ''}
+    </div>
+
+    <div class="form-card">
+      <h2>🗂️ سجل المحذوفات</h2>
+      ${history.length === 0
+        ? '<div style="color:var(--text2);font-size:0.9rem;">لا يوجد سجل بعد — ستظهر هنا المنتجات المحذوفة</div>'
+        : history.map(h => `
+          <div class="history-item">
+            <div>
+              <div style="font-weight:bold;font-size:0.92rem;">${h.name || h.typeName}</div>
+              <div style="font-size:0.75rem;color:var(--text2);">
+                فُتح: ${formatDate(h.openedAt)}
+              </div>
+              <div style="font-size:0.75rem;color:var(--text2);">
+                حُذف: ${formatDate(h.deletedAt)}
+              </div>
+            </div>
+            <div style="font-size:1.3rem;">${h.typeIcon || '📦'}</div>
+          </div>`).join('')
+      }
+    </div>
+  `;
+}
+
 // ===================== DELETE =====================
 let pendingDelete = null;
 function confirmDelete(id, name) {
@@ -844,26 +1123,42 @@ function confirmDelete(id, name) {
 }
 function confirmDeleteType(id, name) {
   pendingDelete = { type: 'type', id };
-  document.getElementById('del-msg').textContent = `هل تريد حذف نوع "${name}"؟ سيتم حذف كل المنتجات المفتوحة من هذا النوع.`;
+  document.getElementById('del-msg').textContent = `هل تريد حذف نوع "${name}"؟ سيتم حذف كل المنتجات من هذا النوع.`;
   document.getElementById('del-confirm-btn').onclick = doDelete;
   document.getElementById('del-modal').classList.add('open');
 }
 function doDelete() {
   if (!pendingDelete) return;
   if (pendingDelete.type === 'item') {
-    const items = loadItems().filter(i => i.id !== pendingDelete.id);
-    saveItems(items);
+    const items = loadItems();
+    const types = loadTypes();
+    const typeMap = {}; types.forEach(t => typeMap[t.id] = t);
+    const item = items.find(i => i.id === pendingDelete.id);
+    if (item) {
+      const type = typeMap[item.typeId];
+      saveToHistory(item, type?.name || 'غير معروف', type?.icon || '📦');
+    }
+    saveItems(items.filter(i => i.id !== pendingDelete.id));
     renderDashboard();
     toast('🗑️ تم الحذف');
   } else {
     const types = loadTypes().filter(t => t.id !== pendingDelete.id);
     saveTypes(types);
-    const items = loadItems().filter(i => i.typeId !== pendingDelete.id);
-    saveItems(items);
+    const items = loadItems();
+    items.filter(i => i.typeId === pendingDelete.id).forEach(item => {
+      saveToHistory(item, 'نوع محذوف', '📦');
+    });
+    saveItems(items.filter(i => i.typeId !== pendingDelete.id));
     renderTypes();
     toast('🗑️ تم حذف النوع');
   }
   closeModal();
+}
+function saveToHistory(item, typeName, typeIcon) {
+  const h = loadHistory();
+  h.unshift({ ...item, typeName, typeIcon, deletedAt: new Date().toISOString() });
+  if (h.length > 100) h.splice(100);
+  localStorage.setItem('deleted_history', JSON.stringify(h));
 }
 function closeModal() {
   document.getElementById('del-modal').classList.remove('open');
@@ -874,7 +1169,8 @@ document.getElementById('del-modal').addEventListener('click', e => {
 });
 
 // ===================== INIT =====================
-loadTypes(); // ensure defaults saved
+loadTypes();
+loadTheme();
 renderDashboard();
 
 // ===================== PWA =====================
@@ -903,103 +1199,34 @@ if ('serviceWorker' in navigator) {
 }
 
 // ===================== AUTO REFRESH =====================
-// كل دقيقة يتحدث الداشبورد تلقائياً
 setInterval(() => {
-  const dashActive = document.getElementById('tab-dashboard').classList.contains('active');
-  if (dashActive) renderDashboard();
+  if (document.getElementById('tab-dashboard').classList.contains('active')) renderDashboard();
 }, 60000);
-
-// كمان لما ترجع للتاب بعد ما تتركه (visibility change)
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) {
-    const dashActive = document.getElementById('tab-dashboard').classList.contains('active');
-    if (dashActive) renderDashboard();
-  }
+  if (!document.hidden && document.getElementById('tab-dashboard').classList.contains('active')) renderDashboard();
 });
 
 // ===================== EXPORT =====================
-function buildReport() {
-  const items = loadItems();
-  const types = loadTypes();
-  const typeMap = {};
-  types.forEach(t => typeMap[t.id] = t);
-
-  const expired = [], soon = [], ok = [];
-  items.forEach(item => {
-    const type = typeMap[item.typeId];
-    if (!type) return;
-    const exp = expiryDate(item.openedAt, type);
-    const ms = msLeft(exp);
-    const s = getStatus(ms);
-    const entry = { item, type, exp, ms, status: s };
-    if (s === 'expired') expired.push(entry);
-    else if (s === 'soon') soon.push(entry);
-    else ok.push(entry);
-  });
-  return { expired, soon, ok };
-}
-
 function exportWhatsApp() {
-  const { expired, soon, ok } = buildReport();
+  const { expired, soon, ok } = buildEntries();
   const today = new Date().toLocaleDateString('ar-EG');
   let msg = `📋 *تقرير صلاحية المنتجات - CK*\n📅 ${today}\n\n`;
-
   if (expired.length) {
     msg += `❌ *منتهية الصلاحية (${expired.length})*\n`;
-    expired.forEach(e => {
-      msg += `• ${e.type.icon} ${e.item.name || e.type.name} — انتهت ${formatDate(e.exp)}\n`;
-    });
+    expired.forEach(e => { msg += `• ${e.type.icon} ${e.item.name || e.type.name} — انتهت ${formatDate(e.exp)}\n`; });
     msg += '\n';
   }
   if (soon.length) {
     msg += `⚠️ *تنتهي قريباً (${soon.length})*\n`;
-    soon.forEach(e => {
-      msg += `• ${e.type.icon} ${e.item.name || e.type.name} — باقي ${formatLeft(e.ms)}\n`;
-    });
+    soon.forEach(e => { msg += `• ${e.type.icon} ${e.item.name || e.type.name} — باقي ${formatLeft(e.ms)}\n`; });
     msg += '\n';
   }
   if (ok.length) {
     msg += `✅ *صالحة (${ok.length})*\n`;
-    ok.forEach(e => {
-      msg += `• ${e.type.icon} ${e.item.name || e.type.name} — باقي ${formatLeft(e.ms)}\n`;
-    });
+    ok.forEach(e => { msg += `• ${e.type.icon} ${e.item.name || e.type.name} — باقي ${formatLeft(e.ms)}\n`; });
   }
-  if (!expired.length && !soon.length && !ok.length) {
-    msg += 'لا يوجد منتجات مسجلة.';
-  }
-
-  const url = 'https://wa.me/?text=' + encodeURIComponent(msg);
-  window.open(url, '_blank');
-}
-
-function exportImage() {
-  const el = document.getElementById('tab-dashboard');
-  toast('⏳ جاري التصدير...');
-  html2canvas(el, { backgroundColor: '#0f0505', scale: 2, useCORS: true }).then(canvas => {
-    const link = document.createElement('a');
-    link.download = 'ck-report-' + new Date().toISOString().slice(0,10) + '.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-    toast('✅ تم حفظ الصورة!');
-  }).catch(() => toast('❌ حدث خطأ أثناء التصدير'));
-}
-
-function exportPDF() {
-  const el = document.getElementById('tab-dashboard');
-  toast('⏳ جاري التصدير...');
-  html2canvas(el, { backgroundColor: '#0f0505', scale: 2, useCORS: true }).then(canvas => {
-    // فتح صورة في نافذة جديدة وطباعتها كـ PDF
-    const imgData = canvas.toDataURL('image/png');
-    const win = window.open('', '_blank');
-    win.document.write(`
-      <html><head><title>CK Report</title>
-      <style>body{margin:0;} img{width:100%;}</style></head>
-      <body onload="window.print(); window.close();">
-        <img src="${imgData}" />
-      </body></html>`);
-    win.document.close();
-    toast('✅ تم فتح نافذة الطباعة!');
-  }).catch(() => toast('❌ حدث خطأ أثناء التصدير'));
+  if (!expired.length && !soon.length && !ok.length) msg += 'لا يوجد منتجات مسجلة.';
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 </script>
 </body>
