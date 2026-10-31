@@ -318,6 +318,7 @@
       .type-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 <div id="app">
@@ -338,6 +339,13 @@
   <div class="stats-row" id="stats-row"></div>
 
   <div id="alert-section"></div>
+
+  <!-- أزرار التصدير -->
+  <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+    <button class="btn secondary" style="flex:1; min-width:100px; font-size:0.82rem; padding:9px 6px;" onclick="exportWhatsApp()">📲 واتساب</button>
+    <button class="btn secondary" style="flex:1; min-width:100px; font-size:0.82rem; padding:9px 6px;" onclick="exportImage()">🖼️ صورة</button>
+    <button class="btn secondary" style="flex:1; min-width:100px; font-size:0.82rem; padding:9px 6px;" onclick="exportPDF()">📄 PDF</button>
+  </div>
 
   <div class="section-title">⚠️ تنتهي قريباً (خلال 3 أيام)</div>
   <div class="product-list" id="list-soon"></div>
@@ -910,6 +918,91 @@ document.addEventListener('visibilitychange', () => {
     if (dashActive) renderDashboard();
   }
 });
+
+// ===================== EXPORT =====================
+function buildReport() {
+  const items = loadItems();
+  const types = loadTypes();
+  const typeMap = {};
+  types.forEach(t => typeMap[t.id] = t);
+
+  const expired = [], soon = [], ok = [];
+  items.forEach(item => {
+    const type = typeMap[item.typeId];
+    if (!type) return;
+    const exp = expiryDate(item.openedAt, type);
+    const ms = msLeft(exp);
+    const s = getStatus(ms);
+    const entry = { item, type, exp, ms, status: s };
+    if (s === 'expired') expired.push(entry);
+    else if (s === 'soon') soon.push(entry);
+    else ok.push(entry);
+  });
+  return { expired, soon, ok };
+}
+
+function exportWhatsApp() {
+  const { expired, soon, ok } = buildReport();
+  const today = new Date().toLocaleDateString('ar-EG');
+  let msg = `📋 *تقرير صلاحية المنتجات - CK*\n📅 ${today}\n\n`;
+
+  if (expired.length) {
+    msg += `❌ *منتهية الصلاحية (${expired.length})*\n`;
+    expired.forEach(e => {
+      msg += `• ${e.type.icon} ${e.item.name || e.type.name} — انتهت ${formatDate(e.exp)}\n`;
+    });
+    msg += '\n';
+  }
+  if (soon.length) {
+    msg += `⚠️ *تنتهي قريباً (${soon.length})*\n`;
+    soon.forEach(e => {
+      msg += `• ${e.type.icon} ${e.item.name || e.type.name} — باقي ${formatLeft(e.ms)}\n`;
+    });
+    msg += '\n';
+  }
+  if (ok.length) {
+    msg += `✅ *صالحة (${ok.length})*\n`;
+    ok.forEach(e => {
+      msg += `• ${e.type.icon} ${e.item.name || e.type.name} — باقي ${formatLeft(e.ms)}\n`;
+    });
+  }
+  if (!expired.length && !soon.length && !ok.length) {
+    msg += 'لا يوجد منتجات مسجلة.';
+  }
+
+  const url = 'https://wa.me/?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank');
+}
+
+function exportImage() {
+  const el = document.getElementById('tab-dashboard');
+  toast('⏳ جاري التصدير...');
+  html2canvas(el, { backgroundColor: '#0f0505', scale: 2, useCORS: true }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'ck-report-' + new Date().toISOString().slice(0,10) + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    toast('✅ تم حفظ الصورة!');
+  }).catch(() => toast('❌ حدث خطأ أثناء التصدير'));
+}
+
+function exportPDF() {
+  const el = document.getElementById('tab-dashboard');
+  toast('⏳ جاري التصدير...');
+  html2canvas(el, { backgroundColor: '#0f0505', scale: 2, useCORS: true }).then(canvas => {
+    // فتح صورة في نافذة جديدة وطباعتها كـ PDF
+    const imgData = canvas.toDataURL('image/png');
+    const win = window.open('', '_blank');
+    win.document.write(`
+      <html><head><title>CK Report</title>
+      <style>body{margin:0;} img{width:100%;}</style></head>
+      <body onload="window.print(); window.close();">
+        <img src="${imgData}" />
+      </body></html>`);
+    win.document.close();
+    toast('✅ تم فتح نافذة الطباعة!');
+  }).catch(() => toast('❌ حدث خطأ أثناء التصدير'));
+}
 </script>
 </body>
 </html>
