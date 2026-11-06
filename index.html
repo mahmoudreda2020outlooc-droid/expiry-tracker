@@ -702,10 +702,12 @@
   <div class="tab" id="tab-btn-order" onclick="switchTab('order')">
     <span class="tab-icon">📦</span>الطلبية
   </div>
+  <div class="tab" id="tab-btn-types" onclick="switchTab('types')">
+    <span class="tab-icon">📋</span>الأنواع
+  </div>
   <div class="tab" id="tab-btn-stats" onclick="switchTab('stats')">
     <span class="tab-icon">📈</span>إحصائيات
   </div>
-  <div class="tab" id="tab-btn-types" style="display:none;"></div>
 </div>
 
 <div id="footer-credit">Developed by Mahmoud Reda</div>
@@ -715,35 +717,89 @@
 <script>
 // ===================== DATA =====================
 const DEFAULT_TYPES = [
-  { id: 'syrup',      name: 'سيروب',              icon: '🧴', days: 30,  unit: 'days' },
-  { id: 'milk',       name: 'حليب',               icon: '🥛', days: 3,   unit: 'days' },
-  { id: 'cream',      name: 'كريمة',              icon: '🍶', days: 3,   unit: 'days' },
-  { id: 'caramel',    name: 'صوص كراميل',         icon: '🍮', days: 30,  unit: 'days' },
-  { id: 'chocolate',  name: 'صوص شوكولاتة',       icon: '🍫', days: 30,  unit: 'days' },
-  { id: 'pistachio',  name: 'معجون فستق',         icon: '🟢', days: 14,  unit: 'days' },
-  { id: 'vanilla',    name: 'خلاصة فانيليا',      icon: '🌿', days: 90,  unit: 'days' },
-  { id: 'matcha',     name: 'ماتشا',              icon: '🍵', days: 14,  unit: 'days' },
-  { id: 'espresso',   name: 'حبوب قهوة مطحونة',  icon: '☕', days: 14,  unit: 'days' },
-  { id: 'whipping',   name: 'ويبينج كريم',        icon: '🧁', days: 3,   unit: 'days' },
-  { id: 'condensed',  name: 'حليب مكثف',         icon: '🥄', days: 14,  unit: 'days' },
-  { id: 'butter',     name: 'زبدة',              icon: '🧈', days: 14,  unit: 'days' },
-  { id: 'jam',        name: 'مربى',              icon: '🍓', days: 30,  unit: 'days' },
-  { id: 'ketchup',    name: 'كاتشب',             icon: '🍅', days: 30,  unit: 'days' },
-  { id: 'mayo',       name: 'مايونيز',           icon: '🫙', days: 14,  unit: 'days' },
-  { id: 'cheese',     name: 'جبن',               icon: '🧀', days: 7,   unit: 'days' },
-  { id: 'eggs',       name: 'بيض',               icon: '🥚', days: 21,  unit: 'days' },
-  { id: 'sauce',      name: 'صوص',               icon: '🫙', days: 14,  unit: 'days' },
-  { id: 'pesto',      name: 'بيستو',             icon: '🌱', days: 7,   unit: 'days' },
-  { id: 'tahini',     name: 'طحينة',             icon: '🌰', days: 30,  unit: 'days' },
-  { id: 'yeast',      name: 'خميرة',             icon: '🧫', days: 14,  unit: 'days' },
-  { id: 'juice',      name: 'عصير طازج',         icon: '🧃', days: 3,   unit: 'days' },
-  { id: 'cold_brew',  name: 'كولد برو',           icon: '🧊', days: 7,   unit: 'days' },
+  // --- الصوصات والتوابل والزيوت ---
+  { id: 'sauce',          name: 'الصوصات',               icon: '🫙', days: 14,  unit: 'days' },
+  { id: 'salt',           name: 'الملح',                 icon: '🧂', days: 365, unit: 'days' },
+  { id: 'fries_spice',    name: 'بهرات الفرايز',         icon: '🧂', days: 90,  unit: 'days' },
+  { id: 'vinegar',        name: 'الخل',                  icon: '🍶', days: 180, unit: 'days' },
+  { id: 'olive_oil',      name: 'زيت الزيتون',           icon: '🫒', days: 90,  unit: 'days' },
+  { id: 'cooking_oil',    name: 'زيت تشغيل',             icon: '🛢️', days: 30,  unit: 'days' },
+  { id: 'ketchup_mayo',   name: 'كراتين الكاتشب والمايونيز', icon: '📦', days: 60, unit: 'days' },
+  { id: 'cheese_sticker', name: 'استيكر كواترو تشيز',    icon: '🏷️', days: 365, unit: 'days' },
+  { id: 'pastrami_sticker', name: 'استيكر بسطرمة',      icon: '🏷️', days: 365, unit: 'days' },
+  { id: 'ketchup',        name: 'كاتشب',                 icon: '🍅', days: 30,  unit: 'days' },
+  { id: 'mayo',           name: 'مايونيز',               icon: '🫙', days: 14,  unit: 'days' },
+
+  // --- طازج وخضار ---
+  { id: 'olives',         name: 'الزيتون',               icon: '🫒', days: 14,  unit: 'days' },
+  { id: 'jalapeno',       name: 'الهالبينو',             icon: '🌶️', days: 14,  unit: 'days' },
+  { id: 'pickles',        name: 'المخلل المشكل',         icon: '🥒', days: 30,  unit: 'days' },
+  { id: 'lettuce',        name: 'الخس',                  icon: '🥬', days: 3,   unit: 'days' },
+  { id: 'eggs',           name: 'البيض',                 icon: '🥚', days: 21,  unit: 'days' },
+
+  // --- خبز وعجائن ---
+  { id: 'burger_bun',     name: 'عيش البرجر',            icon: '🍔', days: 3,   unit: 'days' },
+  { id: 'ciabatta',       name: 'عيش الشباتة',           icon: '🥖', days: 3,   unit: 'days' },
+  { id: 'hotdog_bun',     name: 'عيش هوت دوج',           icon: '🌭', days: 3,   unit: 'days' },
+  { id: 'croissant_p',    name: 'الكرواسون السادة',      icon: '🥐', days: 3,   unit: 'days' },
+  { id: 'croissant_t',    name: 'الكرواسون الرومي',      icon: '🥐', days: 3,   unit: 'days' },
+  { id: 'pizza_dough',    name: 'عجينة بيتزا بمشتملاتها', icon: '🍕', days: 3,   unit: 'days' },
+  { id: 'flour',          name: 'الدقيق',                icon: '🌾', days: 90,  unit: 'days' },
+
+  // --- لحوم وبروتين ---
+  { id: 'patty_cheddar',  name: 'الباتية الشيدر',        icon: '🥐', days: 3,   unit: 'days' },
+  { id: 'patty_white',    name: 'الباتية البيضاء',       icon: '🥐', days: 3,   unit: 'days' },
+  { id: 'fries',          name: 'فرايز',                 icon: '🍟', days: 7,   unit: 'days' },
+  { id: 'strips',         name: 'استربس',                icon: '🍗', days: 7,   unit: 'days' },
+  { id: 'burger',         name: 'برجر',                  icon: '🥩', days: 7,   unit: 'days' },
+  { id: 'hotdog',         name: 'هوت دوج',               icon: '🌭', days: 7,   unit: 'days' },
+  { id: 'pastrami',       name: 'بسطرمة',                icon: '🥓', days: 14,  unit: 'days' },
+  { id: 'pepperoni',      name: 'ببروني',                icon: '🍕', days: 14,  unit: 'days' },
+
+  // --- مخبوزات وحلويات ---
+  { id: 'mini_muffin',    name: 'ميني مافن',             icon: '🧁', days: 5,   unit: 'days' },
+  { id: 'brownies',       name: 'براونيز',               icon: '🍫', days: 5,   unit: 'days' },
+  { id: 'cake',           name: 'كيك',                   icon: '🍰', days: 5,   unit: 'days' },
+  { id: 'cookies',        name: 'كوكيز',                 icon: '🍪', days: 7,   unit: 'days' },
+
+  // --- كافيه ومشروبات ---
+  { id: 'syrup',          name: 'سيروب',                 icon: '🧴', days: 30,  unit: 'days' },
+  { id: 'milk',           name: 'حليب',                  icon: '🥛', days: 3,   unit: 'days' },
+  { id: 'cream',          name: 'كريمة',                 icon: '🍶', days: 3,   unit: 'days' },
+  { id: 'caramel',        name: 'صوص كراميل',            icon: '🍮', days: 30,  unit: 'days' },
+  { id: 'chocolate',      name: 'صوص شوكولاتة',          icon: '🍫', days: 30,  unit: 'days' },
+  { id: 'pistachio',      name: 'معجون فستق',            icon: '🟢', days: 14,  unit: 'days' },
+  { id: 'vanilla',        name: 'خلاصة فانيليا',         icon: '🌿', days: 90,  unit: 'days' },
+  { id: 'matcha',         name: 'ماتشا',                 icon: '🍵', days: 14,  unit: 'days' },
+  { id: 'espresso',       name: 'حبوب قهوة مطحونة',     icon: '☕', days: 14,  unit: 'days' },
+  { id: 'whipping',       name: 'ويبينج كريم',           icon: '🧁', days: 3,   unit: 'days' },
+  { id: 'condensed',      name: 'حليب مكثف',            icon: '🥄', days: 14,  unit: 'days' },
+  { id: 'butter',         name: 'زبدة',                 icon: '🧈', days: 14,  unit: 'days' },
+  { id: 'jam',            name: 'مربى',                 icon: '🍓', days: 30,  unit: 'days' },
+  { id: 'cheese',         name: 'جبن',                  icon: '🧀', days: 7,   unit: 'days' },
+  { id: 'pesto',          name: 'بيستو',                icon: '🌱', days: 7,   unit: 'days' },
+  { id: 'tahini',         name: 'طحينة',                icon: '🌰', days: 30,  unit: 'days' },
+  { id: 'yeast',          name: 'خميرة',                icon: '🧫', days: 14,  unit: 'days' },
+  { id: 'juice',          name: 'عصير طازج',            icon: '🧃', days: 3,   unit: 'days' },
+  { id: 'cold_brew',      name: 'كولد برو',              icon: '🧊', days: 7,   unit: 'days' },
 ];
 
 function loadTypes() {
-  const saved = localStorage.getItem('product_types');
-  if (!saved) { localStorage.setItem('product_types', JSON.stringify(DEFAULT_TYPES)); return DEFAULT_TYPES; }
-  return JSON.parse(saved);
+  let list = [];
+  try {
+    const saved = localStorage.getItem('product_types');
+    list = saved ? JSON.parse(saved) : [];
+  } catch(e) { list = []; }
+
+  const map = new Map();
+  // Put defaults first
+  DEFAULT_TYPES.forEach(t => map.set(t.id, t));
+  // Keep saved user modifications or custom added items
+  list.forEach(t => map.set(t.id, { ...map.get(t.id), ...t }));
+
+  const result = Array.from(map.values());
+  localStorage.setItem('product_types', JSON.stringify(result));
+  return result;
 }
 function saveTypes(types) { localStorage.setItem('product_types', JSON.stringify(types)); }
 
@@ -833,8 +889,7 @@ function checkAndNotify() {
   const newNotified = [...notified];
 
   items.forEach(item => {
-    const type = typeMap[item.typeId];
-    if (!type) return;
+    const type = typeMap[item.typeId] || { name: item.name || 'منتج', icon: '📦', days: 3, unit: 'days' };
     const exp = expiryDate(item.openedAt, type);
     const ms = msLeft(exp);
     const label = item.name || type.name;
@@ -874,8 +929,7 @@ function buildEntries() {
   types.forEach(t => typeMap[t.id] = t);
   const expired = [], soon = [], ok = [];
   items.forEach(item => {
-    const type = typeMap[item.typeId];
-    if (!type) return;
+    const type = typeMap[item.typeId] || { name: item.name || 'منتج', icon: '📦', days: 3, unit: 'days' };
     const exp = expiryDate(item.openedAt, type);
     const ms = msLeft(exp);
     const s = getStatus(ms);
@@ -1338,158 +1392,7 @@ function shareOrderWhatsApp() {
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 
-function getNextOrderDay() {
-  const today = new Date();
-  const dow = today.getDay();
-  // ابحث عن أقرب يوم طلبية
-  for (let i = 0; i <= 7; i++) {
-    const d = (dow + i) % 7;
-    if (ORDER_DAYS.includes(d)) {
-      return { name: ORDER_DAYS_AR[d], daysLeft: i };
-    }
-  }
-}
 
-function loadOrderData() {
-  return JSON.parse(localStorage.getItem('order_data') || '{}');
-}
-function saveOrderData(data) {
-  localStorage.setItem('order_data', JSON.stringify(data));
-}
-
-let orderFilter = 'all';
-function setOrderFilter(f) {
-  orderFilter = f;
-  ['all','needed','auto'].forEach(x => {
-    const btn = document.getElementById('order-filter-' + x);
-    if (btn) btn.className = x === f ? 'btn' : 'btn secondary';
-  });
-  renderOrder();
-}
-
-function getAutoNeeded() {
-  // المنتجات التي انتهت أو قريبة الانتهاء → تحتاج طلب
-  const { expired, soon } = buildEntries();
-  const needSet = new Set();
-  [...expired, ...soon].forEach(e => needSet.add(e.item.typeId));
-  return needSet;
-}
-
-function renderOrder() {
-  // --- Banner ---
-  const next = getNextOrderDay();
-  const banner = document.getElementById('order-next-day-banner');
-  if (banner) {
-    banner.innerHTML = `
-      <div>
-        <div class="day-label">📦 الطلبية القادمة</div>
-        <div class="day-name">${next.name}</div>
-      </div>
-      <div style="text-align:center;">
-        <div style="font-size:2rem;font-weight:900;">${next.daysLeft === 0 ? '🔴' : next.daysLeft}</div>
-        <div class="day-count">${next.daysLeft === 0 ? 'اليوم!' : next.daysLeft === 1 ? 'غداً' : 'يوم'}</div>
-      </div>
-    `;
-  }
-
-  const types = loadTypes();
-  const orderData = loadOrderData();
-  const autoNeeded = getAutoNeeded();
-
-  let list = types.filter(t => !t._temp);
-
-  // Apply filter
-  if (orderFilter === 'needed') {
-    list = list.filter(t => orderData[t.id]?.needed || autoNeeded.has(t.id));
-  } else if (orderFilter === 'auto') {
-    list = list.filter(t => autoNeeded.has(t.id));
-  }
-
-  const el = document.getElementById('order-list');
-  if (!el) return;
-
-  if (list.length === 0) {
-    el.innerHTML = `<div style="color:var(--text2);text-align:center;padding:30px 0;font-size:0.9rem;">لا يوجد منتجات في هذا الفلتر</div>`;
-    return;
-  }
-
-  el.innerHTML = list.map(t => {
-    const od = orderData[t.id] || {};
-    const isNeeded = !!od.needed;
-    const isAuto   = autoNeeded.has(t.id);
-    const qty      = od.qty || '';
-    const cardCls  = isNeeded ? 'order-item needed' : isAuto ? 'order-item auto-needed' : 'order-item';
-    const checkCls = isNeeded ? 'order-check checked' : 'order-check';
-    const hint     = isAuto && !isNeeded
-      ? `<div class="order-item-hint">⚠️ منتهي أو قريب الانتهاء — يُنصح بالطلب</div>` : '';
-
-    return `
-      <div class="${cardCls}" id="order-row-${t.id}">
-        <div class="${checkCls}" id="order-check-${t.id}" onclick="toggleOrderNeeded('${t.id}')">
-          ${isNeeded ? '✓' : ''}
-        </div>
-        <div class="order-item-info">
-          <div class="order-item-name">${t.icon} ${t.name}</div>
-          ${hint}
-        </div>
-        <input class="order-qty" type="number" min="1" max="999"
-          placeholder="كمية"
-          value="${qty}"
-          onchange="updateOrderQty('${t.id}', this.value)"
-          title="الكمية المطلوبة"
-        />
-      </div>`;
-  }).join('');
-
-  // Summary count
-  const neededCount = types.filter(t => orderData[t.id]?.needed || autoNeeded.has(t.id)).length;
-}
-
-function toggleOrderNeeded(typeId) {
-  const data = loadOrderData();
-  if (!data[typeId]) data[typeId] = {};
-  data[typeId].needed = !data[typeId].needed;
-  saveOrderData(data);
-  renderOrder();
-}
-
-function updateOrderQty(typeId, val) {
-  const data = loadOrderData();
-  if (!data[typeId]) data[typeId] = {};
-  data[typeId].qty = val ? parseInt(val) : null;
-  saveOrderData(data);
-}
-
-function clearOrder() {
-  const data = loadOrderData();
-  Object.keys(data).forEach(k => { data[k].needed = false; data[k].qty = null; });
-  saveOrderData(data);
-  renderOrder();
-  toast('🔄 تم مسح الطلبية');
-}
-
-function shareOrderWhatsApp() {
-  const types = loadTypes();
-  const orderData = loadOrderData();
-  const autoNeeded = getAutoNeeded();
-  const next = getNextOrderDay();
-
-  const needed = types.filter(t => orderData[t.id]?.needed || autoNeeded.has(t.id));
-  if (needed.length === 0) { toast('⚠️ لا يوجد منتجات محددة للطلب'); return; }
-
-  const today = new Date().toLocaleDateString('ar-EG');
-  let msg = `📦 *طلبية CK*\n📅 ${today} — طلبية ${next.name}\n\n`;
-
-  needed.forEach(t => {
-    const od = orderData[t.id] || {};
-    const qty = od.qty ? ` × ${od.qty}` : '';
-    const warn = autoNeeded.has(t.id) ? ' ⚠️' : '';
-    msg += `• ${t.icon} ${t.name}${qty}${warn}\n`;
-  });
-
-  msg += `\n_تم التوليد من تطبيق CK_`;
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
-}
 
 
 function renderStats() {

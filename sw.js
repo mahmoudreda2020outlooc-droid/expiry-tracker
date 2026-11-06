@@ -1,4 +1,4 @@
-const CACHE = 'ck-v6';
+const CACHE = 'ck-v7';
 const FILES = ['/', '/expiry-tracker/', '/expiry-tracker/index.html'];
 
 self.addEventListener('install', e => {
