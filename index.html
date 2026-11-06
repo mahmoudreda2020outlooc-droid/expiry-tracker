@@ -788,46 +788,80 @@ function loadTypes() {
   let list = [];
   try {
     const saved = localStorage.getItem('product_types');
-    list = saved ? JSON.parse(saved) : [];
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) list = parsed;
+    }
   } catch(e) { list = []; }
 
   const map = new Map();
-  // Put defaults first
   DEFAULT_TYPES.forEach(t => map.set(t.id, t));
-  // Keep saved user modifications or custom added items
-  list.forEach(t => map.set(t.id, { ...map.get(t.id), ...t }));
+  if (Array.isArray(list)) {
+    list.forEach(t => {
+      if (t && t.id) {
+        const existing = map.get(t.id) || {};
+        map.set(t.id, { ...existing, ...t });
+      }
+    });
+  }
 
   const result = Array.from(map.values());
-  localStorage.setItem('product_types', JSON.stringify(result));
+  try {
+    localStorage.setItem('product_types', JSON.stringify(result));
+  } catch(e) {}
   return result;
 }
-function saveTypes(types) { localStorage.setItem('product_types', JSON.stringify(types)); }
+function saveTypes(types) {
+  try { localStorage.setItem('product_types', JSON.stringify(types)); } catch(e) {}
+}
 
 function loadItems() {
-  const saved = localStorage.getItem('opened_items');
-  return saved ? JSON.parse(saved) : [];
+  try {
+    const saved = localStorage.getItem('opened_items');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch(e) {}
+  return [];
 }
-function saveItems(items) { localStorage.setItem('opened_items', JSON.stringify(items)); }
+function saveItems(items) {
+  try { localStorage.setItem('opened_items', JSON.stringify(items)); } catch(e) {}
+}
 
-function loadHistory() { return JSON.parse(localStorage.getItem('deleted_history') || '[]'); }
+function loadHistory() {
+  try {
+    const h = JSON.parse(localStorage.getItem('deleted_history') || '[]');
+    return Array.isArray(h) ? h : [];
+  } catch(e) { return []; }
+}
 function saveHistory(item, typeName) {
-  const h = loadHistory();
-  h.unshift({ ...item, typeName, deletedAt: new Date().toISOString() });
-  if (h.length > 100) h.splice(100);
-  localStorage.setItem('deleted_history', JSON.stringify(h));
+  try {
+    const h = loadHistory();
+    h.unshift({ ...item, typeName, deletedAt: new Date().toISOString() });
+    if (h.length > 100) h.splice(100);
+    localStorage.setItem('deleted_history', JSON.stringify(h));
+  } catch(e) {}
 }
 
 // ===================== HELPERS =====================
 function now() { return new Date(); }
 function expiryDate(openedAt, type) {
   const d = new Date(openedAt);
-  if (type.unit === 'hours') d.setHours(d.getHours() + type.days);
-  else d.setDate(d.getDate() + type.days);
+  const dur = parseInt(type?.days, 10) || 1;
+  if (type?.unit === 'hours') d.setHours(d.getHours() + dur);
+  else d.setDate(d.getDate() + dur);
   return d;
 }
 function msLeft(expiry) { return new Date(expiry) - now(); }
 function formatDate(d) {
-  return new Date(d).toLocaleDateString('ar-EG', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  try {
+    const dt = new Date(d);
+    if (isNaN(dt.getTime())) return 'تاريخ غير صالح';
+    return dt.toLocaleDateString('ar-EG', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  } catch(e) {
+    return 'غير محدد';
+  }
 }
 function formatLeft(ms) {
   if (ms <= 0) return 'منتهية';
@@ -942,41 +976,50 @@ function buildEntries() {
 }
 
 function renderDashboard() {
-  const { expired, soon, ok } = buildEntries();
+  try {
+    const { expired, soon, ok } = buildEntries();
 
-  document.getElementById('stats-row').innerHTML = `
-    <div class="stat-card red"><div class="num">${expired.length}</div><div class="lbl">❌ منتهية</div></div>
-    <div class="stat-card yellow"><div class="num">${soon.length}</div><div class="lbl">⚠️ قريباً</div></div>
-    <div class="stat-card green"><div class="num">${ok.length}</div><div class="lbl">✅ صالحة</div></div>
-  `;
-
-  const alertSec = document.getElementById('alert-section');
-  alertSec.innerHTML = expired.length > 0
-    ? `<div style="background:var(--red-bg);border:1px solid var(--red);border-radius:10px;padding:11px 14px;margin-bottom:14px;color:var(--red);font-weight:bold;">
-        ⚠️ ${expired.length} منتج منتهي الصلاحية يحتاج مراجعة فورية!
-       </div>`
-    : '';
-
-  const query = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
-  const sortMode = document.getElementById('sort-select')?.value || 'expiry';
-
-  function filterAndSort(arr) {
-    let res = arr;
-    if (query) {
-      res = arr.filter(e => (e.item.name || e.type.name).toLowerCase().includes(query) ||
-        e.type.name.toLowerCase().includes(query));
+    const statsRow = document.getElementById('stats-row');
+    if (statsRow) {
+      statsRow.innerHTML = `
+        <div class="stat-card red"><div class="num">${expired.length}</div><div class="lbl">❌ منتهية</div></div>
+        <div class="stat-card yellow"><div class="num">${soon.length}</div><div class="lbl">⚠️ قريباً</div></div>
+        <div class="stat-card green"><div class="num">${ok.length}</div><div class="lbl">✅ صالحة</div></div>
+      `;
     }
-    if (sortMode === 'name') res.sort((a,b) => (a.item.name||a.type.name).localeCompare(b.item.name||b.type.name, 'ar'));
-    else if (sortMode === 'opened') res.sort((a,b) => new Date(b.item.openedAt) - new Date(a.item.openedAt));
-    else res.sort((a,b) => a.ms - b.ms);
-    return res;
+
+    const alertSec = document.getElementById('alert-section');
+    if (alertSec) {
+      alertSec.innerHTML = expired.length > 0
+        ? `<div style="background:var(--red-bg);border:1px solid var(--red);border-radius:10px;padding:11px 14px;margin-bottom:14px;color:var(--red);font-weight:bold;">
+            ⚠️ ${expired.length} منتج منتهي الصلاحية يحتاج مراجعة فورية!
+           </div>`
+        : '';
+    }
+
+    const query = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
+    const sortMode = document.getElementById('sort-select')?.value || 'expiry';
+
+    function filterAndSort(arr) {
+      let res = arr;
+      if (query) {
+        res = arr.filter(e => (e.item.name || e.type.name).toLowerCase().includes(query) ||
+          e.type.name.toLowerCase().includes(query));
+      }
+      if (sortMode === 'name') res.sort((a,b) => (a.item.name||a.type.name).localeCompare(b.item.name||b.type.name, 'ar'));
+      else if (sortMode === 'opened') res.sort((a,b) => new Date(b.item.openedAt) - new Date(a.item.openedAt));
+      else res.sort((a,b) => a.ms - b.ms);
+      return res;
+    }
+
+    renderList('list-soon',    filterAndSort(soon),    'لا يوجد منتجات تنتهي قريباً ✨');
+    renderList('list-ok',      filterAndSort(ok),      'لا يوجد منتجات صالحة مسجلة');
+    renderList('list-expired', filterAndSort(expired), 'لا يوجد منتجات منتهية ✅');
+
+    checkAndNotify();
+  } catch (err) {
+    console.error('Error in renderDashboard:', err);
   }
-
-  renderList('list-soon',    filterAndSort(soon),    'لا يوجد منتجات تنتهي قريباً ✨');
-  renderList('list-ok',      filterAndSort(ok),      'لا يوجد منتجات صالحة مسجلة');
-  renderList('list-expired', filterAndSort(expired), 'لا يوجد منتجات منتهية ✅');
-
-  checkAndNotify();
 }
 
 function renderList(id, entries, emptyMsg) {
