@@ -328,6 +328,78 @@
     .type-card .type-name { font-weight: bold; font-size: 0.92rem; }
     .type-card .type-dur { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
 
+    /* ========== ORDER TAB ========== */
+    .order-next-day {
+      background: linear-gradient(135deg, var(--accent), #8e1a0e);
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .order-next-day .day-label { font-size: 0.82rem; opacity: 0.85; }
+    .order-next-day .day-name  { font-size: 1.3rem; font-weight: 900; }
+    .order-next-day .day-count { font-size: 0.85rem; opacity: 0.9; }
+
+    .order-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .order-item.needed   { border-color: var(--accent); background: var(--red-bg); }
+    .order-item.auto-needed { border-right: 4px solid var(--yellow); }
+
+    /* custom checkbox */
+    .order-check {
+      width: 24px; height: 24px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      flex-shrink: 0;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      transition: all 0.2s;
+      background: var(--bg);
+    }
+    .order-check.checked { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .order-item-info { flex: 1; min-width: 0; }
+    .order-item-name { font-weight: bold; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; }
+    .order-item-hint { font-size: 0.75rem; color: var(--yellow); margin-top: 2px; }
+    .order-qty {
+      width: 60px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 8px;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: inherit;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .order-qty:focus { outline: none; border-color: var(--accent); }
+    .order-summary-bar {
+      position: sticky;
+      bottom: 0;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      padding: 10px 14px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin: 0 -14px -20px;
+    }
+
     /* ========== STATS ========== */
     .history-item {
       display: flex;
@@ -520,6 +592,28 @@
   <div id="stats-content"></div>
 </div>
 
+<!-- ===================== ORDER ===================== -->
+<div id="tab-order" class="page">
+  <!-- Next order day banner -->
+  <div class="order-next-day" id="order-next-day-banner"></div>
+
+  <!-- Action buttons -->
+  <div style="display:flex; gap:8px; margin-bottom:14px;">
+    <button class="btn secondary" style="flex:1; font-size:0.82rem; padding:9px 6px;" onclick="shareOrderWhatsApp()">📲 مشاركة الطلبية</button>
+    <button class="btn secondary" style="font-size:0.82rem; padding:9px 10px;" onclick="clearOrder()" title="مسح التحديد">🔄 مسح</button>
+  </div>
+
+  <!-- Filter -->
+  <div style="display:flex; gap:8px; margin-bottom:12px;">
+    <button id="order-filter-all"      class="btn" style="flex:1;padding:7px 4px;font-size:0.78rem;" onclick="setOrderFilter('all')">الكل</button>
+    <button id="order-filter-needed"   class="btn secondary" style="flex:1;padding:7px 4px;font-size:0.78rem;" onclick="setOrderFilter('needed')">✅ محتاج فقط</button>
+    <button id="order-filter-auto"     class="btn secondary" style="flex:1;padding:7px 4px;font-size:0.78rem;" onclick="setOrderFilter('auto')">⚠️ منتهية</button>
+  </div>
+
+  <!-- Items list -->
+  <div id="order-list"></div>
+</div>
+
 <!-- ===================== PRODUCT TYPES (hidden) ===================== -->
 <div id="tab-types" class="page">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
@@ -605,6 +699,9 @@
   </div>
   <div class="tab" id="tab-btn-open" onclick="switchTab('open')">
     <span class="tab-icon">➕</span>فتح منتج
+  </div>
+  <div class="tab" id="tab-btn-order" onclick="switchTab('order')">
+    <span class="tab-icon">📦</span>الطلبية
   </div>
   <div class="tab" id="tab-btn-stats" onclick="switchTab('stats')">
     <span class="tab-icon">📈</span>إحصائيات
@@ -756,7 +853,7 @@ function checkAndNotify() {
 
 // ===================== TABS =====================
 function switchTab(name) {
-  ['dashboard','open','stats','types'].forEach(n => {
+  ['dashboard','open','order','stats','types'].forEach(n => {
     const btn = document.getElementById('tab-btn-' + n);
     if (btn) btn.classList.toggle('active', n === name);
   });
@@ -767,6 +864,7 @@ function switchTab(name) {
   if (name === 'open') renderOpenForm();
   if (name === 'types') renderTypes();
   if (name === 'stats') renderStats();
+  if (name === 'order') renderOrder();
 }
 
 // ===================== DASHBOARD =====================
@@ -1054,7 +1152,164 @@ function addType() {
   renderTypes();
 }
 
-// ===================== STATS =====================
+// ===================== ORDER TAB =====================
+const ORDER_DAYS = [2, 4, 6]; // الثلاثاء=2، الخميس=4، السبت=6
+const ORDER_DAYS_AR = { 0:'الأحد', 1:'الاثنين', 2:'الثلاثاء', 3:'الأربعاء', 4:'الخميس', 5:'الجمعة', 6:'السبت' };
+
+function getNextOrderDay() {
+  const today = new Date();
+  const dow = today.getDay();
+  // ابحث عن أقرب يوم طلبية
+  for (let i = 0; i <= 7; i++) {
+    const d = (dow + i) % 7;
+    if (ORDER_DAYS.includes(d)) {
+      return { name: ORDER_DAYS_AR[d], daysLeft: i };
+    }
+  }
+}
+
+function loadOrderData() {
+  return JSON.parse(localStorage.getItem('order_data') || '{}');
+}
+function saveOrderData(data) {
+  localStorage.setItem('order_data', JSON.stringify(data));
+}
+
+let orderFilter = 'all';
+function setOrderFilter(f) {
+  orderFilter = f;
+  ['all','needed','auto'].forEach(x => {
+    const btn = document.getElementById('order-filter-' + x);
+    if (btn) btn.className = x === f ? 'btn' : 'btn secondary';
+  });
+  renderOrder();
+}
+
+function getAutoNeeded() {
+  // المنتجات التي انتهت أو قريبة الانتهاء → تحتاج طلب
+  const { expired, soon } = buildEntries();
+  const needSet = new Set();
+  [...expired, ...soon].forEach(e => needSet.add(e.item.typeId));
+  return needSet;
+}
+
+function renderOrder() {
+  // --- Banner ---
+  const next = getNextOrderDay();
+  const banner = document.getElementById('order-next-day-banner');
+  if (banner) {
+    banner.innerHTML = `
+      <div>
+        <div class="day-label">📦 الطلبية القادمة</div>
+        <div class="day-name">${next.name}</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:2rem;font-weight:900;">${next.daysLeft === 0 ? '🔴' : next.daysLeft}</div>
+        <div class="day-count">${next.daysLeft === 0 ? 'اليوم!' : next.daysLeft === 1 ? 'غداً' : 'يوم'}</div>
+      </div>
+    `;
+  }
+
+  const types = loadTypes();
+  const orderData = loadOrderData();
+  const autoNeeded = getAutoNeeded();
+
+  let list = types.filter(t => !t._temp);
+
+  // Apply filter
+  if (orderFilter === 'needed') {
+    list = list.filter(t => orderData[t.id]?.needed || autoNeeded.has(t.id));
+  } else if (orderFilter === 'auto') {
+    list = list.filter(t => autoNeeded.has(t.id));
+  }
+
+  const el = document.getElementById('order-list');
+  if (!el) return;
+
+  if (list.length === 0) {
+    el.innerHTML = `<div style="color:var(--text2);text-align:center;padding:30px 0;font-size:0.9rem;">لا يوجد منتجات في هذا الفلتر</div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(t => {
+    const od = orderData[t.id] || {};
+    const isNeeded = !!od.needed;
+    const isAuto   = autoNeeded.has(t.id);
+    const qty      = od.qty || '';
+    const cardCls  = isNeeded ? 'order-item needed' : isAuto ? 'order-item auto-needed' : 'order-item';
+    const checkCls = isNeeded ? 'order-check checked' : 'order-check';
+    const hint     = isAuto && !isNeeded
+      ? `<div class="order-item-hint">⚠️ منتهي أو قريب الانتهاء — يُنصح بالطلب</div>` : '';
+
+    return `
+      <div class="${cardCls}" id="order-row-${t.id}">
+        <div class="${checkCls}" id="order-check-${t.id}" onclick="toggleOrderNeeded('${t.id}')">
+          ${isNeeded ? '✓' : ''}
+        </div>
+        <div class="order-item-info">
+          <div class="order-item-name">${t.icon} ${t.name}</div>
+          ${hint}
+        </div>
+        <input class="order-qty" type="number" min="1" max="999"
+          placeholder="كمية"
+          value="${qty}"
+          onchange="updateOrderQty('${t.id}', this.value)"
+          title="الكمية المطلوبة"
+        />
+      </div>`;
+  }).join('');
+
+  // Summary count
+  const neededCount = types.filter(t => orderData[t.id]?.needed || autoNeeded.has(t.id)).length;
+}
+
+function toggleOrderNeeded(typeId) {
+  const data = loadOrderData();
+  if (!data[typeId]) data[typeId] = {};
+  data[typeId].needed = !data[typeId].needed;
+  saveOrderData(data);
+  renderOrder();
+}
+
+function updateOrderQty(typeId, val) {
+  const data = loadOrderData();
+  if (!data[typeId]) data[typeId] = {};
+  data[typeId].qty = val ? parseInt(val) : null;
+  saveOrderData(data);
+}
+
+function clearOrder() {
+  const data = loadOrderData();
+  Object.keys(data).forEach(k => { data[k].needed = false; data[k].qty = null; });
+  saveOrderData(data);
+  renderOrder();
+  toast('🔄 تم مسح الطلبية');
+}
+
+function shareOrderWhatsApp() {
+  const types = loadTypes();
+  const orderData = loadOrderData();
+  const autoNeeded = getAutoNeeded();
+  const next = getNextOrderDay();
+
+  const needed = types.filter(t => orderData[t.id]?.needed || autoNeeded.has(t.id));
+  if (needed.length === 0) { toast('⚠️ لا يوجد منتجات محددة للطلب'); return; }
+
+  const today = new Date().toLocaleDateString('ar-EG');
+  let msg = `📦 *طلبية CK*\n📅 ${today} — طلبية ${next.name}\n\n`;
+
+  needed.forEach(t => {
+    const od = orderData[t.id] || {};
+    const qty = od.qty ? ` × ${od.qty}` : '';
+    const warn = autoNeeded.has(t.id) ? ' ⚠️' : '';
+    msg += `• ${t.icon} ${t.name}${qty}${warn}\n`;
+  });
+
+  msg += `\n_تم التوليد من تطبيق CK_`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+
 function renderStats() {
   const items = loadItems();
   const types = loadTypes();
